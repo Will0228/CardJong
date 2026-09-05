@@ -54,7 +54,7 @@ namespace CardJong.InGame.States
                 return;
             }
 
-            var discard = _model.LastDiscard.Value;
+            var discard = _model.LastDiscard;
             var declarations = await CollectDeclarationsAsync(discard, cancellationToken);
             var accepted = ClaimPriority.Resolve(declarations, discard.Seat, _model.PlayerCount);
 

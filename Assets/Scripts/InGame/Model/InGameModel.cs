@@ -49,7 +49,7 @@ namespace CardJong.InGame.Model
         public Observable<DiscardInfo> OnDiscarded => _onDiscarded;
 
         /// <summary>直前の捨て札。局の開始直後は null。</summary>
-        public DiscardInfo? LastDiscard { get; private set; }
+        public DiscardInfo LastDiscard { get; private set; }
 
         /// <summary>
         /// 直前にツモしたか。鳴いた直後の打牌ではツモ上がりできないので false になる。

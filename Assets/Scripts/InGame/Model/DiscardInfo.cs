@@ -3,19 +3,10 @@ using CardJong.InGame.Cards;
 namespace CardJong.InGame.Model
 {
     /// <summary>直前の捨て札の情報。ロン・ポン・チーの判定対象になる。</summary>
-    public readonly struct DiscardInfo
+    /// <param name="Card">捨てられたカード。</param>
+    /// <param name="Seat">捨てたプレイヤーの席。</param>
+    public sealed record DiscardInfo(Card Card, int Seat)
     {
-        public Card Card { get; }
-
-        /// <summary>捨てたプレイヤーの席。</summary>
-        public int Seat { get; }
-
-        public DiscardInfo(Card card, int seat)
-        {
-            Card = card;
-            Seat = seat;
-        }
-
         public override string ToString() => $"seat{Seat} discards {Card}";
     }
 }

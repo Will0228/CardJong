@@ -21,7 +21,7 @@ namespace CardJong.InGame.Model
     /// 鳴いて公開された組。鳴いた瞬間に同一マークで固定され、以後変更できない。
     /// 鳴きで作れるのは 3 枚組・4 枚組のみ。
     /// </summary>
-    public sealed class Meld
+    public sealed record Meld
     {
         public MeldType Type { get; }
 
