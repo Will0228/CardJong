@@ -36,7 +36,7 @@ namespace CardJong.InGame.Commands
                 if (_usedCards[i] != _claimedCard) return false;
             }
 
-            return _model.GetPlayer(_seat).CountInHand(_claimedCard) >= _usedCards.Count;
+            return _model.GetPlayer(_seat).CountSameCardsInHand(_claimedCard) >= _usedCards.Count;
         }
 
         public UniTask ExecuteAsync(CancellationToken cancellationToken)

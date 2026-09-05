@@ -126,8 +126,8 @@ namespace CardJong.InGame.Model
             IsTemporaryFuriten = value;
         }
 
-        /// <summary>手札に含まれる同一カードの枚数。ポンの成立判定に使う。</summary>
-        public int CountInHand(Card card)
+        /// <summary>手札に含まれる、指定カードと同じ札の枚数。ポンの成立判定に使う。</summary>
+        public int CountSameCardsInHand(Card card)
         {
             var count = 0;
             for (var i = 0; i < _concealedCards.Count; i++)

@@ -27,7 +27,7 @@ namespace CardJong.InGame.Commands
             var player = _model.GetPlayer(_seat);
             if (_declareRiichi && !player.IsMenzen) return false;
 
-            return player.CountInHand(_card) > 0;
+            return player.CountSameCardsInHand(_card) > 0;
         }
 
         public UniTask ExecuteAsync(CancellationToken cancellationToken)

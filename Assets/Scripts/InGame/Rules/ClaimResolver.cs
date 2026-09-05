@@ -82,7 +82,7 @@ namespace CardJong.InGame.Rules
         /// </summary>
         private void AddPonOptions(PlayerModel player, Card discarded, List<ClaimOption> options)
         {
-            var inHand = player.CountInHand(discarded);
+            var inHand = player.CountSameCardsInHand(discarded);
 
             for (var i = 0; i < ClaimableMeldSizes.Length; i++)
             {
