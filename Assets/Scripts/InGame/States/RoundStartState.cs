@@ -1,6 +1,5 @@
 using System.Threading;
 using CardJong.Core;
-using CardJong.Core.Commands;
 using CardJong.InGame.Cards;
 using CardJong.InGame.Model;
 using CardJong.InGame.Presentation;
@@ -17,7 +16,6 @@ namespace CardJong.InGame.States
     {
         private readonly InGameModel _model;
         private readonly IRandomService _random;
-        private readonly IGameCommandInvoker _commandInvoker;
         private readonly IInGamePresentation _presentation;
 
         [Inject]
@@ -25,12 +23,10 @@ namespace CardJong.InGame.States
             IStateSwitcher<InGameStateType> stateSwitcher,
             InGameModel model,
             IRandomService random,
-            IGameCommandInvoker commandInvoker,
             IInGamePresentation presentation) : base(stateSwitcher)
         {
             _model = model;
             _random = random;
-            _commandInvoker = commandInvoker;
             _presentation = presentation;
         }
 
@@ -43,7 +39,6 @@ namespace CardJong.InGame.States
             _model.ClearPendingWin();
             _model.ClearLastDiscard();
             _model.SetCanDeclareTsumo(false);
-            _commandInvoker.ClearHistory();
 
             for (var seat = 0; seat < _model.PlayerCount; seat++)
             {

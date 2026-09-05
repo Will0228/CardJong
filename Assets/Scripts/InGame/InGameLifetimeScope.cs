@@ -55,7 +55,9 @@ namespace CardJong.InGame
 
         private static void RegisterCommands(IContainerBuilder builder)
         {
-            builder.Register<IGameCommandInvoker, GameCommandInvoker>(Lifetime.Singleton);
+            // インゲーム中ずっと持ち回るものではなく、処理が込み入ってきたステートが
+            // その場で使う道具なので、要求のたびに作り直す。
+            builder.Register<IGameCommandInvoker, GameCommandInvoker>(Lifetime.Transient);
             builder.Register<GameCommandFactory>(Lifetime.Singleton);
         }
 
