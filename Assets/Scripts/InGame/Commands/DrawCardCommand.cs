@@ -28,12 +28,12 @@ namespace CardJong.InGame.Commands
             var card = _model.Wall.Draw();
             var player = _model.GetPlayer(_seat);
 
-            player.Draw(card);
+            player.Cards.Draw(card);
 
             // 見逃しによる一時フリテンはツモで解除される。ただしリーチ後はその局ずっと続く。
-            if (!player.IsRiichi)
+            if (!player.Status.IsRiichi)
             {
-                player.SetTemporaryFuriten(false);
+                player.Status.SetTemporaryFuriten(false);
             }
 
             _model.SetCanDeclareTsumo(true);

@@ -37,19 +37,19 @@ namespace CardJong.InGame.Commands
         public bool CanExecute()
         {
             var player = _model.GetPlayer(_seat);
-            if (player.IsTemporaryFuriten) return false;
+            if (player.Status.IsTemporaryFuriten) return false;
 
-            var hand = new List<Card>(player.ConcealedCards.Count + 1);
-            hand.AddRange(player.ConcealedCards);
+            var hand = new List<Card>(player.Cards.ConcealedCards.Count + 1);
+            hand.AddRange(player.Cards.ConcealedCards);
             hand.Add(_card);
 
-            return _handAnalyzer.IsWinningHand(hand, player.Melds);
+            return _handAnalyzer.IsWinningHand(hand, player.Cards.Melds);
         }
 
         public UniTask ExecuteAsync(CancellationToken cancellationToken)
         {
             // 上がり札は放銃者の河から取り除く。
-            _model.GetPlayer(_fromSeat).RemoveLastDiscard();
+            _model.GetPlayer(_fromSeat).Cards.RemoveLastDiscard();
 
             var win = _scoreCalculator.Evaluate(_model, _seat, _fromSeat, _card);
             _model.SetPendingWin(win);

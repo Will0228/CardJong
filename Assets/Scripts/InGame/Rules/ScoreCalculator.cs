@@ -35,17 +35,17 @@ namespace CardJong.InGame.Rules
             var isTsumo = loserSeat < 0;
 
             // 上がり形の 14 枚（ロンの場合は上がり札を足した状態）
-            var concealed = new List<Card>(player.ConcealedCards);
+            var concealed = new List<Card>(player.Cards.ConcealedCards);
             if (!isTsumo) concealed.Add(winningCard);
 
             var allCards = new List<Card>(concealed);
-            for (var i = 0; i < player.Melds.Count; i++)
+            for (var i = 0; i < player.Cards.Melds.Count; i++)
             {
-                allCards.AddRange(player.Melds[i].Cards);
+                allCards.AddRange(player.Cards.Melds[i].Cards);
             }
 
             var yaku = new List<YakuResult>();
-            if (_handAnalyzer.TryDecompose(concealed, player.Melds, out var decomposition))
+            if (_handAnalyzer.TryDecompose(concealed, player.Cards.Melds, out var decomposition))
             {
                 CollectYaku(player, decomposition, allCards, isTsumo, yaku);
             }
@@ -130,8 +130,8 @@ namespace CardJong.InGame.Rules
             List<YakuResult> yaku)
         {
             // 状況役
-            if (player.IsRiichi) yaku.Add(new YakuResult("リーチ", 1));
-            if (isTsumo && player.IsMenzen) yaku.Add(new YakuResult("ツモ", 1));
+            if (player.Status.IsRiichi) yaku.Add(new YakuResult("リーチ", 1));
+            if (isTsumo && player.Cards.IsMenzen) yaku.Add(new YakuResult("ツモ", 1));
 
             // 手役
             if (IsAllSimples(allCards)) yaku.Add(new YakuResult("断么九", 1));
@@ -140,7 +140,7 @@ namespace CardJong.InGame.Rules
             {
                 yaku.Add(new YakuResult("対々和", 2));
             }
-            else if (player.IsMenzen && IsAllRuns(decomposition))
+            else if (player.Cards.IsMenzen && IsAllRuns(decomposition))
             {
                 yaku.Add(new YakuResult("平和", 1));
             }
@@ -148,11 +148,11 @@ namespace CardJong.InGame.Rules
             // 清一色は一色の上位役なので重複させない
             if (IsSameSuit(allCards))
             {
-                yaku.Add(new YakuResult("清一色", player.IsMenzen ? 4 : 3));
+                yaku.Add(new YakuResult("清一色", player.Cards.IsMenzen ? 4 : 3));
             }
             else if (IsSameColor(allCards))
             {
-                yaku.Add(new YakuResult("一色", player.IsMenzen ? 2 : 1));
+                yaku.Add(new YakuResult("一色", player.Cards.IsMenzen ? 2 : 1));
             }
         }
 

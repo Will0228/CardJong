@@ -56,21 +56,21 @@ namespace CardJong.InGame.Rules
         private bool CanRon(PlayerModel player, Card discarded)
         {
             // 見逃しによる一時フリテン
-            if (player.IsTemporaryFuriten) return false;
+            if (player.Status.IsTemporaryFuriten) return false;
 
-            var hand = new List<Card>(player.ConcealedCards.Count + 1);
-            hand.AddRange(player.ConcealedCards);
+            var hand = new List<Card>(player.Cards.ConcealedCards.Count + 1);
+            hand.AddRange(player.Cards.ConcealedCards);
             hand.Add(discarded);
 
-            if (!_handAnalyzer.IsWinningHand(hand, player.Melds)) return false;
+            if (!_handAnalyzer.IsWinningHand(hand, player.Cards.Melds)) return false;
 
             // フリテン: 自分の上がり札のいずれかが自分の捨て札に含まれる場合はロンできない
-            var waits = _handAnalyzer.EnumerateWaits(player.ConcealedCards, player.Melds);
+            var waits = _handAnalyzer.EnumerateWaits(player.Cards.ConcealedCards, player.Cards.Melds);
             for (var i = 0; i < waits.Count; i++)
             {
-                for (var j = 0; j < player.Discards.Count; j++)
+                for (var j = 0; j < player.Cards.Discards.Count; j++)
                 {
-                    if (waits[i].Matches(player.Discards[j])) return false;
+                    if (waits[i].Matches(player.Cards.Discards[j])) return false;
                 }
             }
 
@@ -82,7 +82,7 @@ namespace CardJong.InGame.Rules
         /// </summary>
         private void AddPonOptions(PlayerModel player, Card discarded, List<ClaimOption> options)
         {
-            var inHand = player.CountSameCardsInHand(discarded);
+            var inHand = player.Cards.CountSameCardsInHand(discarded);
 
             for (var i = 0; i < ClaimableMeldSizes.Length; i++)
             {
@@ -128,7 +128,7 @@ namespace CardJong.InGame.Rules
         private List<Card> TryCollectRunFromHand(PlayerModel player, Card discarded, int start, int size)
         {
             var used = new List<Card>(size - 1);
-            var remaining = new List<Card>(player.ConcealedCards);
+            var remaining = new List<Card>(player.Cards.ConcealedCards);
             var isDiscardedUsed = false;
 
             for (var p = start; p < start + size; p++)

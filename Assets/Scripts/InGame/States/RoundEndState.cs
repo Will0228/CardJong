@@ -81,7 +81,7 @@ namespace CardJong.InGame.States
             for (var seat = 0; seat < _model.PlayerCount; seat++)
             {
                 var player = _model.GetPlayer(seat);
-                if (_handAnalyzer.IsTenpai(player.ConcealedCards, player.Melds))
+                if (_handAnalyzer.IsTenpai(player.Cards.ConcealedCards, player.Cards.Melds))
                 {
                     seats.Add(seat);
                 }
@@ -94,7 +94,7 @@ namespace CardJong.InGame.States
         {
             for (var seat = 0; seat < deltas.Count; seat++)
             {
-                _model.GetPlayer(seat).AddScore(deltas[seat]);
+                _model.GetPlayer(seat).Score.Add(deltas[seat]);
             }
         }
     }

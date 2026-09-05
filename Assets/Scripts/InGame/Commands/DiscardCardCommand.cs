@@ -25,9 +25,9 @@ namespace CardJong.InGame.Commands
         public bool CanExecute()
         {
             var player = _model.GetPlayer(_seat);
-            if (_declareRiichi && !player.IsMenzen) return false;
+            if (_declareRiichi && !player.Cards.IsMenzen) return false;
 
-            return player.CountSameCardsInHand(_card) > 0;
+            return player.Cards.CountSameCardsInHand(_card) > 0;
         }
 
         public UniTask ExecuteAsync(CancellationToken cancellationToken)
@@ -36,12 +36,12 @@ namespace CardJong.InGame.Commands
 
             if (_declareRiichi)
             {
-                player.DeclareRiichi();
+                player.Status.DeclareRiichi();
             }
 
-            player.RemoveFromHand(_card);
-            player.SortHand();
-            player.AddDiscard(_card);
+            player.Cards.RemoveFromHand(_card);
+            player.Cards.SortHand();
+            player.Cards.AddDiscard(_card);
 
             _model.SetLastDiscard(new DiscardInfo(_card, _seat));
             _model.SetCanDeclareTsumo(false);

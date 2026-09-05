@@ -36,7 +36,7 @@ namespace CardJong.InGame.Actions
 
             if (context.CanDeclareTsumo) return TurnAction.Tsumo();
 
-            var hand = context.Model.GetPlayer(Seat).ConcealedCards;
+            var hand = context.Model.GetPlayer(Seat).Cards.ConcealedCards;
             return TurnAction.Discard(hand[_random.Next(hand.Count)]);
         }
 

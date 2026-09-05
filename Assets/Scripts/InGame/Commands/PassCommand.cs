@@ -29,7 +29,7 @@ namespace CardJong.InGame.Commands
             // 上がり札を見逃した場合は一時フリテンになり、次のツモまでロンできない。
             if (_wasRonAvailable)
             {
-                _model.GetPlayer(_seat).SetTemporaryFuriten(true);
+                _model.GetPlayer(_seat).Status.SetTemporaryFuriten(true);
             }
 
             return UniTask.CompletedTask;

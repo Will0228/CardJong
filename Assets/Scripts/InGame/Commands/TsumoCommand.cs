@@ -31,15 +31,15 @@ namespace CardJong.InGame.Commands
             if (!_model.CanDeclareTsumo) return false;
 
             var player = _model.GetPlayer(_seat);
-            if (player.LastDrawnCard == null) return false;
+            if (player.Cards.LastDrawnCard == null) return false;
 
-            return _handAnalyzer.IsWinningHand(player.ConcealedCards, player.Melds);
+            return _handAnalyzer.IsWinningHand(player.Cards.ConcealedCards, player.Cards.Melds);
         }
 
         public UniTask ExecuteAsync(CancellationToken cancellationToken)
         {
             var player = _model.GetPlayer(_seat);
-            var winningCard = player.LastDrawnCard;
+            var winningCard = player.Cards.LastDrawnCard;
 
             var win = _scoreCalculator.Evaluate(_model, _seat, loserSeat: -1, winningCard);
             _model.SetPendingWin(win);

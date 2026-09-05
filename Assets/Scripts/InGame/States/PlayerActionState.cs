@@ -49,7 +49,7 @@ namespace CardJong.InGame.States
             var player = _model.GetPlayer(seat);
 
             var canDeclareTsumo = _model.CanDeclareTsumo
-                && _handAnalyzer.IsWinningHand(player.ConcealedCards, player.Melds);
+                && _handAnalyzer.IsWinningHand(player.Cards.ConcealedCards, player.Cards.Melds);
             var canDeclareRiichi = CanDeclareRiichi(player);
 
             var context = new TurnDecisionContext(
@@ -97,23 +97,23 @@ namespace CardJong.InGame.States
 
         private Card GetDefaultDiscard(PlayerModel player)
         {
-            if (player.LastDrawnCard != null) return player.LastDrawnCard;
+            if (player.Cards.LastDrawnCard != null) return player.Cards.LastDrawnCard;
 
             // 鳴いた直後はツモ札が無いので、手札の末尾を捨てる
-            return player.ConcealedCards[player.ConcealedCards.Count - 1];
+            return player.Cards.ConcealedCards[player.Cards.ConcealedCards.Count - 1];
         }
 
         /// <summary>リーチできるか。門前かつ、1 枚捨てればテンパイになる形があること。</summary>
         private bool CanDeclareRiichi(PlayerModel player)
         {
-            if (!player.IsMenzen || player.IsRiichi) return false;
+            if (!player.Cards.IsMenzen || player.Status.IsRiichi) return false;
 
-            var hand = new List<Card>(player.ConcealedCards);
+            var hand = new List<Card>(player.Cards.ConcealedCards);
             for (var i = 0; i < hand.Count; i++)
             {
                 var removed = hand[i];
                 hand.RemoveAt(i);
-                var isTenpai = _handAnalyzer.IsTenpai(hand, player.Melds);
+                var isTenpai = _handAnalyzer.IsTenpai(hand, player.Cards.Melds);
                 hand.Insert(i, removed);
 
                 if (isTenpai) return true;

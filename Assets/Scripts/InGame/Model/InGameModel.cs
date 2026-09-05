@@ -160,14 +160,14 @@ namespace CardJong.InGame.Model
             var ordered = new List<PlayerModel>(_players);
             ordered.Sort(static (a, b) =>
             {
-                var score = b.Score.CurrentValue.CompareTo(a.Score.CurrentValue);
+                var score = b.Score.Points.CurrentValue.CompareTo(a.Score.Points.CurrentValue);
                 return score != 0 ? score : a.Seat.CompareTo(b.Seat);
             });
 
             var rankings = new List<PlayerFinalScore>(ordered.Count);
             for (var i = 0; i < ordered.Count; i++)
             {
-                rankings.Add(new PlayerFinalScore(ordered[i].Seat, ordered[i].Score.CurrentValue, i + 1));
+                rankings.Add(new PlayerFinalScore(ordered[i].Seat, ordered[i].Score.Points.CurrentValue, i + 1));
             }
 
             return new GameResult(rankings);

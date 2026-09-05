@@ -36,25 +36,25 @@ namespace CardJong.InGame.Commands
                 if (_usedCards[i] != _claimedCard) return false;
             }
 
-            return _model.GetPlayer(_seat).CountSameCardsInHand(_claimedCard) >= _usedCards.Count;
+            return _model.GetPlayer(_seat).Cards.CountSameCardsInHand(_claimedCard) >= _usedCards.Count;
         }
 
         public UniTask ExecuteAsync(CancellationToken cancellationToken)
         {
             var player = _model.GetPlayer(_seat);
-            _model.GetPlayer(_fromSeat).RemoveLastDiscard();
+            _model.GetPlayer(_fromSeat).Cards.RemoveLastDiscard();
 
             var cards = new List<Card>(_usedCards.Count + 1);
             for (var i = 0; i < _usedCards.Count; i++)
             {
-                player.RemoveFromHand(_usedCards[i]);
+                player.Cards.RemoveFromHand(_usedCards[i]);
                 cards.Add(_usedCards[i]);
             }
 
             cards.Add(_claimedCard);
 
-            player.AddMeld(new Meld(MeldType.Pon, cards, _claimedCard, _fromSeat));
-            player.SortHand();
+            player.Cards.AddMeld(new Meld(MeldType.Pon, cards, _claimedCard, _fromSeat));
+            player.Cards.SortHand();
 
             _model.SetCanDeclareTsumo(false);
             _model.ClearLastDiscard();

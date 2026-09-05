@@ -35,7 +35,7 @@ namespace CardJong.InGame.Commands
             if (_model.GetUpperSeat(_seat) != _fromSeat) return false;
 
             var player = _model.GetPlayer(_seat);
-            var remaining = new List<Card>(player.ConcealedCards);
+            var remaining = new List<Card>(player.Cards.ConcealedCards);
 
             for (var i = 0; i < _usedCards.Count; i++)
             {
@@ -54,19 +54,19 @@ namespace CardJong.InGame.Commands
         public UniTask ExecuteAsync(CancellationToken cancellationToken)
         {
             var player = _model.GetPlayer(_seat);
-            _model.GetPlayer(_fromSeat).RemoveLastDiscard();
+            _model.GetPlayer(_fromSeat).Cards.RemoveLastDiscard();
 
             var cards = new List<Card>(_usedCards.Count + 1);
             for (var i = 0; i < _usedCards.Count; i++)
             {
-                player.RemoveFromHand(_usedCards[i]);
+                player.Cards.RemoveFromHand(_usedCards[i]);
                 cards.Add(_usedCards[i]);
             }
 
             cards.Add(_claimedCard);
 
-            player.AddMeld(new Meld(MeldType.Chi, CardRunUtility.OrderAsRun(cards), _claimedCard, _fromSeat));
-            player.SortHand();
+            player.Cards.AddMeld(new Meld(MeldType.Chi, CardRunUtility.OrderAsRun(cards), _claimedCard, _fromSeat));
+            player.Cards.SortHand();
 
             _model.SetCanDeclareTsumo(false);
             _model.ClearLastDiscard();

@@ -44,7 +44,7 @@ namespace CardJong.InGame.States
             {
                 var player = _model.GetPlayer(seat);
                 player.ResetForNewRound();
-                player.DealCards(_model.Wall.DealCards(InGameModel.HandSize));
+                player.Cards.DealCards(_model.Wall.DealCards(InGameModel.HandSize));
             }
 
             _model.Wall.RevealDoraIndicator();
