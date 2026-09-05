@@ -5,11 +5,14 @@ namespace CardJong.InGame
     /// <summary>局数の設定。</summary>
     public enum RoundMode : byte
     {
+        /// <summary>未設定。</summary>
+        None = 0,
+
         /// <summary>東風戦（東 1 局 〜 東 4 局）。</summary>
-        East = 0,
+        East = 1,
 
         /// <summary>半荘戦（東 1 局 〜 南 4 局）。</summary>
-        Half = 1,
+        Half = 2,
     }
 
     /// <summary>インゲームの各種設定。</summary>

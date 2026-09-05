@@ -10,17 +10,20 @@ namespace CardJong.InGame.Rules
     /// </summary>
     public enum ClaimType : byte
     {
+        /// <summary>未設定。</summary>
+        None = 0,
+
         /// <summary>何もしない。</summary>
-        Pass = 0,
+        Pass = 1,
 
         /// <summary>チー（順子の鳴き）。上家からのみ。</summary>
-        Chi = 1,
+        Chi = 2,
 
         /// <summary>ポン（刻子の鳴き）。</summary>
-        Pon = 2,
+        Pon = 3,
 
         /// <summary>ロン（他家の捨て札で上がる）。</summary>
-        Ron = 3,
+        Ron = 4,
     }
 
     /// <summary>捨て札に対して実行できる宣言 1 つ分。</summary>

@@ -15,6 +15,8 @@ namespace CardJong.InGame.Rules
     /// </remarks>
     public sealed class HandAnalyzer : IHandAnalyzer
     {
+        // counts 配列は色・ランクをそのまま添字に使う。CardColor.None と Rank の 0 に当たる
+        // 添字 0 は使わないので、どちらの次元も要素数を 1 つ多く取る。
         private const int ColorCount = 2;
         private const int RankCount = 13;
 
@@ -46,7 +48,7 @@ namespace CardJong.InGame.Rules
             var groups = new List<HandGroup>(BaseGroupSizes.Length);
 
             // 雀頭は同一ランク 2 枚（色も一致）。候補を総当りする。
-            for (var color = 0; color < ColorCount; color++)
+            for (var color = 1; color <= ColorCount; color++)
             {
                 for (var rank = 1; rank <= RankCount; rank++)
                 {
@@ -91,7 +93,7 @@ namespace CardJong.InGame.Rules
             buffer.Add(default);
             var lastIndex = buffer.Count - 1;
 
-            for (var color = 0; color < ColorCount; color++)
+            for (var color = 1; color <= ColorCount; color++)
             {
                 for (var rank = 1; rank <= RankCount; rank++)
                 {
@@ -126,7 +128,7 @@ namespace CardJong.InGame.Rules
 
         private static int[,] BuildCounts(IReadOnlyList<Card> cards)
         {
-            var counts = new int[ColorCount, RankCount + 1];
+            var counts = new int[ColorCount + 1, RankCount + 1];
             for (var i = 0; i < cards.Count; i++)
             {
                 counts[(int)cards[i].Color, (int)cards[i].Rank]++;
@@ -250,7 +252,7 @@ namespace CardJong.InGame.Rules
 
         private static bool TryFindLowestCard(int[,] counts, out int color, out int rank)
         {
-            for (var c = 0; c < ColorCount; c++)
+            for (var c = 1; c <= ColorCount; c++)
             {
                 for (var r = 1; r <= RankCount; r++)
                 {
@@ -269,7 +271,7 @@ namespace CardJong.InGame.Rules
 
         private static bool IsEmpty(int[,] counts)
         {
-            for (var c = 0; c < ColorCount; c++)
+            for (var c = 1; c <= ColorCount; c++)
             {
                 for (var r = 1; r <= RankCount; r++)
                 {

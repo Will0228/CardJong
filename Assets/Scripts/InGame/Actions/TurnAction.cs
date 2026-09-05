@@ -5,14 +5,17 @@ namespace CardJong.InGame.Actions
     /// <summary>自分の手番でできる行動。</summary>
     public enum TurnActionType : byte
     {
+        /// <summary>未設定。</summary>
+        None = 0,
+
         /// <summary>カードを 1 枚捨てる。</summary>
-        Discard = 0,
+        Discard = 1,
 
         /// <summary>ツモ上がり。</summary>
-        Tsumo = 1,
+        Tsumo = 2,
 
         /// <summary>リーチを宣言して 1 枚捨てる。</summary>
-        Riichi = 2,
+        Riichi = 3,
     }
 
     /// <summary>

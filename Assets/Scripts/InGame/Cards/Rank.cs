@@ -4,6 +4,11 @@ namespace CardJong.InGame.Cards
     /// ランク。A=1 〜 K=13。
     /// A は順子の最小（A-2-3）としても最大（Q-K-A）としても使えるが、K-A-2 のような循環はしない。
     /// </summary>
+    /// <remarks>
+    /// 数字がそのままランクの値になっている方が順子の判定を書きやすいので、
+    /// この enum だけは 0 番目に None を置かず Ace = 1 から始める。
+    /// 既定値の 0 はどのランクでもない値として、そのまま「未設定」を表す。
+    /// </remarks>
     public enum Rank : byte
     {
         Ace = 1,

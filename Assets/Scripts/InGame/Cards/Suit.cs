@@ -3,16 +3,19 @@ namespace CardJong.InGame.Cards
     /// <summary>マーク（スート）。鳴きの成立条件はこのレベルで判定する。</summary>
     public enum Suit : byte
     {
+        /// <summary>未設定。</summary>
+        None = 0,
+
         /// <summary>♠</summary>
-        Spade = 0,
+        Spade = 1,
 
         /// <summary>♥</summary>
-        Heart = 1,
+        Heart = 2,
 
         /// <summary>♦</summary>
-        Diamond = 2,
+        Diamond = 3,
 
         /// <summary>♣</summary>
-        Club = 3,
+        Club = 4,
     }
 }
