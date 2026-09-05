@@ -92,6 +92,10 @@ namespace CardJong.Core
         private async UniTask<TKey?> RunStateAsync(TKey key, CancellationToken cancellationToken)
         {
             // ステートは Transient で解決される想定なので、1 ステート 1 インスタンス。
+            // どちらも寿命がこのメソッドと一致し、途中で例外やキャンセルが起きても
+            // 破棄し漏らしたくないので using で持つ。
+            // stateCancellation の方は Dispose しないと、リンク元(外側のトークン)に登録された
+            // コールバックが残り続けてしまう。
             using var state = _stateFactory.Create(key);
             using var stateCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
