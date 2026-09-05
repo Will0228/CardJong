@@ -104,7 +104,7 @@ namespace CardJong.InGame.States
             {
                 if (seat == discard.Seat) continue;
 
-                var options = _claimResolver.GetOptions(_model, seat, discard);
+                var options = _claimResolver.GetOptions(seat, discard);
                 if (options.Count == 0)
                 {
                     tasks.Add(UniTask.FromResult(ClaimDeclaration.Pass(seat)));

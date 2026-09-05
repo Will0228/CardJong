@@ -15,20 +15,22 @@ namespace CardJong.InGame.Rules
         /// <summary>鳴きで作れる組は 3 枚組・4 枚組のみ。</summary>
         private static readonly int[] ClaimableMeldSizes = { 3, 4 };
 
+        private readonly InGameModel _model;
         private readonly IHandAnalyzer _handAnalyzer;
 
         [Inject]
-        public ClaimResolver(IHandAnalyzer handAnalyzer)
+        public ClaimResolver(InGameModel model, IHandAnalyzer handAnalyzer)
         {
+            _model = model ?? throw new ArgumentNullException(nameof(model));
             _handAnalyzer = handAnalyzer ?? throw new ArgumentNullException(nameof(handAnalyzer));
         }
 
-        public IReadOnlyList<ClaimOption> GetOptions(InGameModel model, int seat, DiscardInfo discard)
+        public IReadOnlyList<ClaimOption> GetOptions(int seat, DiscardInfo discard)
         {
             var options = new List<ClaimOption>();
             if (seat == discard.Seat) return options;
 
-            var player = model.GetPlayer(seat);
+            var player = _model.GetPlayer(seat);
 
             if (CanRon(player, discard.Card))
             {
@@ -38,7 +40,7 @@ namespace CardJong.InGame.Rules
             AddPonOptions(player, discard.Card, options);
 
             // チーは上家の捨て札からのみ
-            if (model.GetUpperSeat(seat) == discard.Seat)
+            if (_model.GetUpperSeat(seat) == discard.Seat)
             {
                 AddChiOptions(player, discard.Card, options);
             }
