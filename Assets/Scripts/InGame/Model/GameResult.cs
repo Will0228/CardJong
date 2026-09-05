@@ -23,14 +23,6 @@ namespace CardJong.InGame.Model
     }
 
     /// <summary>ゲーム全体の結果。</summary>
-    public sealed class GameResult
-    {
-        /// <summary>順位順に並んだ最終スコア。</summary>
-        public IReadOnlyList<PlayerFinalScore> Rankings { get; }
-
-        public GameResult(IReadOnlyList<PlayerFinalScore> rankings)
-        {
-            Rankings = rankings;
-        }
-    }
+    /// <param name="Rankings">順位順に並んだ最終スコア。</param>
+    public sealed record GameResult(IReadOnlyList<PlayerFinalScore> Rankings);
 }

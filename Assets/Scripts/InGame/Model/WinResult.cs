@@ -20,47 +20,23 @@ namespace CardJong.InGame.Model
     }
 
     /// <summary>上がりの内容。</summary>
-    public sealed class WinResult
+    /// <param name="WinnerSeat">上がったプレイヤーの席。</param>
+    /// <param name="LoserSeat">放銃したプレイヤーの席。ツモ上がりの場合は -1。</param>
+    /// <param name="WinningCard">14 枚目になったカード。</param>
+    /// <param name="Yaku">成立した役。</param>
+    /// <param name="DoraCount">ドラの枚数（翻数に加算済み）。</param>
+    /// <param name="Han">役とドラを合計した翻数。</param>
+    /// <param name="IsYakuman">役満役が成立しているか。</param>
+    public sealed record WinResult(
+        int WinnerSeat,
+        int LoserSeat,
+        Card WinningCard,
+        IReadOnlyList<YakuResult> Yaku,
+        int DoraCount,
+        int Han,
+        bool IsYakuman)
     {
-        /// <summary>上がったプレイヤーの席。</summary>
-        public int WinnerSeat { get; }
-
-        /// <summary>放銃したプレイヤーの席。ツモ上がりの場合は -1。</summary>
-        public int LoserSeat { get; }
-
-        /// <summary>14 枚目になったカード。</summary>
-        public Card WinningCard { get; }
-
-        public IReadOnlyList<YakuResult> Yaku { get; }
-
-        /// <summary>ドラの枚数（翻数に加算済み）。</summary>
-        public int DoraCount { get; }
-
-        /// <summary>役とドラを合計した翻数。</summary>
-        public int Han { get; }
-
-        /// <summary>役満役が成立しているか。</summary>
-        public bool IsYakuman { get; }
-
         public bool IsTsumo => LoserSeat < 0;
-
-        public WinResult(
-            int winnerSeat,
-            int loserSeat,
-            Card winningCard,
-            IReadOnlyList<YakuResult> yaku,
-            int doraCount,
-            int han,
-            bool isYakuman)
-        {
-            WinnerSeat = winnerSeat;
-            LoserSeat = loserSeat;
-            WinningCard = winningCard;
-            Yaku = yaku;
-            DoraCount = doraCount;
-            Han = han;
-            IsYakuman = isYakuman;
-        }
 
         public override string ToString()
             => $"seat{WinnerSeat} {(IsTsumo ? "ツモ" : $"ロン(from seat{LoserSeat})")} {WinningCard} {Han}翻";

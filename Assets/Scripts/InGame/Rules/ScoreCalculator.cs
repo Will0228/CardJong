@@ -58,7 +58,7 @@ namespace CardJong.InGame.Rules
                 han += yaku[i].Han;
             }
 
-            return new WinResult(winnerSeat, loserSeat, winningCard, yaku, doraCount, han, isYakuman: false);
+            return new WinResult(winnerSeat, loserSeat, winningCard, yaku, doraCount, han, IsYakuman: false);
         }
 
         public int[] CalculateWinDeltas(InGameModel model, WinResult win)
