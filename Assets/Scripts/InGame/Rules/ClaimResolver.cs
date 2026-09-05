@@ -18,6 +18,12 @@ namespace CardJong.InGame.Rules
         private readonly InGameModel _model;
         private readonly IHandAnalyzer _handAnalyzer;
 
+        /// <summary>
+        /// ロン判定で使う「手札 + 捨て札」の作業用リスト。
+        /// 捨て札 1 枚につき人数分呼ばれるので、そのたびに作り直さず使い回す。
+        /// </summary>
+        private readonly List<Card> _ronHandBuffer = new(InGameModel.WinningHandSize);
+
         [Inject]
         public ClaimResolver(InGameModel model, IHandAnalyzer handAnalyzer)
         {
@@ -60,11 +66,11 @@ namespace CardJong.InGame.Rules
             // 見逃しによる一時フリテン
             if (player.Status.IsTemporaryFuriten) return false;
 
-            var hand = new List<Card>(player.Cards.ConcealedCards.Count + 1);
-            hand.AddRange(player.Cards.ConcealedCards);
-            hand.Add(discarded);
+            _ronHandBuffer.Clear();
+            _ronHandBuffer.AddRange(player.Cards.ConcealedCards);
+            _ronHandBuffer.Add(discarded);
 
-            if (!_handAnalyzer.IsWinningHand(hand, player.Cards.Melds)) return false;
+            if (!_handAnalyzer.IsWinningHand(_ronHandBuffer, player.Cards.Melds)) return false;
 
             // フリテン: 自分の上がり札のいずれかが自分の捨て札に含まれる場合はロンできない
             var waits = _handAnalyzer.EnumerateWaits(player.Cards.ConcealedCards, player.Cards.Melds);
