@@ -9,8 +9,8 @@ using Cysharp.Threading.Tasks;
 namespace CardJong.InGame.Commands
 {
     /// <summary>
-    /// チー。上家の捨て札と手札の同一マーク連続札で順子を作る。
-    /// 3 枚組には連続 2 枚、4 枚組には連続 3 枚が手札に必要。
+    /// チー。上家の捨て札と手札の同一マークの札で順子を作る。
+    /// 手札側の札は連続していなくてよく、2・4 を持っていれば捨てられた 3 でチーできる。
     /// </summary>
     public sealed class ChiCommand : IGameCommand
     {

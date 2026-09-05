@@ -109,7 +109,9 @@ namespace CardJong.InGame.Rules
         }
 
         /// <summary>
-        /// チーの選択肢。3 枚組には同一マークの連続 2 枚、4 枚組には連続 3 枚が手札に必要。
+        /// チーの選択肢。捨て札を含む順子を、手札の同一マークの札で埋められるなら成立する。
+        /// 手札側の 2 枚（4 枚組なら 3 枚）は連続している必要はなく、2・4 を持っていれば
+        /// 捨てられた 3 でチーできる。順子の開始位置を総当りして、足りないランクを手札から集める。
         /// </summary>
         private void AddChiOptions(PlayerModel player, Card discarded, List<ClaimOption> options)
         {
