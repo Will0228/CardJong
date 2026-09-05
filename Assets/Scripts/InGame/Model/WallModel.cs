@@ -14,6 +14,12 @@ namespace CardJong.InGame.Model
         private readonly List<Card> _doraIndicators = new();
         private readonly ReactiveProperty<int> _liveWallRemaining = new(0);
 
+        /// <summary>
+        /// ドラの色とランク。表示札をめくった時点で確定するので、そこで作っておく。
+        /// 点数計算では 14 枚ぶん問い合わせが来るため、都度めくり直さず引くだけにする。
+        /// </summary>
+        private readonly HashSet<CardPattern> _doraPatterns = new();
+
         /// <summary>次に配るカードの位置。</summary>
         private int _cursor;
 
@@ -36,6 +42,7 @@ namespace CardJong.InGame.Model
             _cards.Clear();
             _cards.AddRange(shuffledDeck);
             _doraIndicators.Clear();
+            _doraPatterns.Clear();
             _cursor = 0;
             _liveWallEnd = 0;
             _liveWallRemaining.Value = 0;
@@ -44,8 +51,6 @@ namespace CardJong.InGame.Model
         /// <summary>配札用に山の上から count 枚を取り出す。</summary>
         public IReadOnlyList<Card> DealCards(int count)
         {
-            EnsureAvailable(count);
-
             var dealt = _cards.GetRange(_cursor, count);
             _cursor += count;
             return dealt;
@@ -54,10 +59,9 @@ namespace CardJong.InGame.Model
         /// <summary>ドラ表示札を 1 枚めくる。</summary>
         public Card RevealDoraIndicator()
         {
-            EnsureAvailable(1);
-
             var card = _cards[_cursor++];
             _doraIndicators.Add(card);
+            _doraPatterns.Add(new CardPattern(card.Color, NextRank(card.Rank)));
             return card;
         }
 
@@ -81,30 +85,10 @@ namespace CardJong.InGame.Model
         }
 
         /// <summary>ドラかどうか。表示札の次のランクかつ同じ色の札がドラ。</summary>
-        public bool IsDora(Card card)
-        {
-            for (var i = 0; i < _doraIndicators.Count; i++)
-            {
-                var indicator = _doraIndicators[i];
-                if (indicator.Color == card.Color && NextRank(indicator.Rank) == card.Rank)
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
+        public bool IsDora(Card card) => _doraPatterns.Contains(card.Pattern);
 
         /// <summary>ドラ表示札から見た次のランク。K の次は A に戻る。</summary>
-        public static Rank NextRank(Rank rank) => rank == Rank.King ? Rank.Ace : rank + 1;
-
-        private void EnsureAvailable(int count)
-        {
-            if (_cursor + count > _cards.Count)
-            {
-                throw new InvalidOperationException($"山札が足りません。要求 {count} 枚 / 残り {_cards.Count - _cursor} 枚");
-            }
-        }
+        private Rank NextRank(Rank rank) => rank == Rank.King ? Rank.Ace : rank + 1;
 
         public void Dispose()
         {
