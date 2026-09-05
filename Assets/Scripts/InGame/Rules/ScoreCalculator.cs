@@ -113,7 +113,7 @@ namespace CardJong.InGame.Rules
         }
 
         /// <summary>ツモ和了で 1 人が支払う点数。親が上がった場合は全員同額。</summary>
-        private static int GetTsumoPayment(WinResult win, bool isDealerWin, bool isPayerDealer)
+        private int GetTsumoPayment(WinResult win, bool isDealerWin, bool isPayerDealer)
         {
             if (isDealerWin) return ScoreTable.GetDealerTsumoPayment(win.Han, win.IsYakuman);
 
@@ -122,7 +122,7 @@ namespace CardJong.InGame.Rules
                 : ScoreTable.GetNonDealerTsumoPaymentFromNonDealer(win.Han, win.IsYakuman);
         }
 
-        private static void CollectYaku(
+        private void CollectYaku(
             PlayerModel player,
             HandDecomposition decomposition,
             IReadOnlyList<Card> allCards,
@@ -157,7 +157,7 @@ namespace CardJong.InGame.Rules
         }
 
         /// <summary>断么九: A・J・Q・K を 1 枚も含まない。</summary>
-        private static bool IsAllSimples(IReadOnlyList<Card> cards)
+        private bool IsAllSimples(IReadOnlyList<Card> cards)
         {
             for (var i = 0; i < cards.Count; i++)
             {
@@ -168,7 +168,7 @@ namespace CardJong.InGame.Rules
         }
 
         /// <summary>対々和: 5 / 4 / 3 枚組がすべて刻子。</summary>
-        private static bool IsAllTriplets(HandDecomposition decomposition)
+        private bool IsAllTriplets(HandDecomposition decomposition)
         {
             for (var i = 0; i < decomposition.Groups.Count; i++)
             {
@@ -179,7 +179,7 @@ namespace CardJong.InGame.Rules
         }
 
         /// <summary>平和: 5 / 4 / 3 枚組がすべて順子。</summary>
-        private static bool IsAllRuns(HandDecomposition decomposition)
+        private bool IsAllRuns(HandDecomposition decomposition)
         {
             for (var i = 0; i < decomposition.Groups.Count; i++)
             {
@@ -190,7 +190,7 @@ namespace CardJong.InGame.Rules
         }
 
         /// <summary>一色: 14 枚すべてが同じ色。</summary>
-        private static bool IsSameColor(IReadOnlyList<Card> cards)
+        private bool IsSameColor(IReadOnlyList<Card> cards)
         {
             if (cards.Count == 0) return false;
 
@@ -204,7 +204,7 @@ namespace CardJong.InGame.Rules
         }
 
         /// <summary>清一色: 14 枚すべてが同じマーク。</summary>
-        private static bool IsSameSuit(IReadOnlyList<Card> cards)
+        private bool IsSameSuit(IReadOnlyList<Card> cards)
         {
             if (cards.Count == 0) return false;
 
@@ -217,7 +217,7 @@ namespace CardJong.InGame.Rules
             return true;
         }
 
-        private static int CountDora(InGameModel model, IReadOnlyList<Card> cards)
+        private int CountDora(InGameModel model, IReadOnlyList<Card> cards)
         {
             var count = 0;
             for (var i = 0; i < cards.Count; i++)
@@ -228,7 +228,7 @@ namespace CardJong.InGame.Rules
             return count;
         }
 
-        private static bool Contains(IReadOnlyList<int> values, int target)
+        private bool Contains(IReadOnlyList<int> values, int target)
         {
             for (var i = 0; i < values.Count; i++)
             {

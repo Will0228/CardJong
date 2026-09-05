@@ -85,7 +85,7 @@ namespace CardJong.InGame.States
         }
 
         /// <summary>宣言できない行動が返ってきた場合に、実行可能な行動へ丸める。</summary>
-        private static TurnAction Sanitize(TurnAction action, bool canDeclareTsumo, bool canDeclareRiichi, TurnAction fallback)
+        private TurnAction Sanitize(TurnAction action, bool canDeclareTsumo, bool canDeclareRiichi, TurnAction fallback)
         {
             return action.Type switch
             {
@@ -95,7 +95,7 @@ namespace CardJong.InGame.States
             };
         }
 
-        private static Card GetDefaultDiscard(PlayerModel player)
+        private Card GetDefaultDiscard(PlayerModel player)
         {
             if (player.LastDrawnCard.HasValue) return player.LastDrawnCard.Value;
 

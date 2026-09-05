@@ -149,7 +149,7 @@ namespace CardJong.InGame.States
             }
         }
 
-        private static bool ContainsRon(IReadOnlyList<ClaimOption> options)
+        private bool ContainsRon(IReadOnlyList<ClaimOption> options)
         {
             for (var i = 0; i < options.Count; i++)
             {

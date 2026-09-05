@@ -113,7 +113,7 @@ namespace CardJong.InGame.Rules
         /// 鳴いた組を差し引いて、手札で作る必要がある組のサイズを求める。
         /// 同じサイズの組は 1 つずつしか無いので、同サイズを 2 回鳴いた形は成立しない。
         /// </summary>
-        private static bool TryGetRemainingGroupSizes(IReadOnlyList<Meld> melds, out List<int> sizes)
+        private bool TryGetRemainingGroupSizes(IReadOnlyList<Meld> melds, out List<int> sizes)
         {
             sizes = new List<int>(BaseGroupSizes);
             if (melds == null) return true;
@@ -126,7 +126,7 @@ namespace CardJong.InGame.Rules
             return true;
         }
 
-        private static int[,] BuildCounts(IReadOnlyList<Card> cards)
+        private int[,] BuildCounts(IReadOnlyList<Card> cards)
         {
             var counts = new int[ColorCount + 1, RankCount + 1];
             for (var i = 0; i < cards.Count; i++)
@@ -137,7 +137,7 @@ namespace CardJong.InGame.Rules
             return counts;
         }
 
-        private static bool TryFormGroups(
+        private bool TryFormGroups(
             int[,] counts,
             IReadOnlyList<int> sizes,
             bool[] used,
@@ -196,7 +196,7 @@ namespace CardJong.InGame.Rules
             return false;
         }
 
-        private static void AppendMeldedGroups(IReadOnlyList<Meld> melds, List<HandGroup> groups)
+        private void AppendMeldedGroups(IReadOnlyList<Meld> melds, List<HandGroup> groups)
         {
             if (melds == null) return;
 
@@ -213,7 +213,7 @@ namespace CardJong.InGame.Rules
             }
         }
 
-        private static HandGroup CreateTriplet(CardColor color, Rank rank, int size)
+        private HandGroup CreateTriplet(CardColor color, Rank rank, int size)
         {
             var ranks = new Rank[size];
             for (var i = 0; i < size; i++)
@@ -224,10 +224,10 @@ namespace CardJong.InGame.Rules
             return new HandGroup(true, color, ranks, false);
         }
 
-        private static HandGroup CreateRun(CardColor color, int start, int size)
+        private HandGroup CreateRun(CardColor color, int start, int size)
             => new(false, color, CardRunUtility.GetRunRanks(start, size), false);
 
-        private static bool TryTakeRun(int[,] counts, int color, int start, int size)
+        private bool TryTakeRun(int[,] counts, int color, int start, int size)
         {
             for (var p = start; p < start + size; p++)
             {
@@ -242,7 +242,7 @@ namespace CardJong.InGame.Rules
             return true;
         }
 
-        private static void ReturnRun(int[,] counts, int color, int start, int size)
+        private void ReturnRun(int[,] counts, int color, int start, int size)
         {
             for (var p = start; p < start + size; p++)
             {
@@ -250,7 +250,7 @@ namespace CardJong.InGame.Rules
             }
         }
 
-        private static bool TryFindLowestCard(int[,] counts, out int color, out int rank)
+        private bool TryFindLowestCard(int[,] counts, out int color, out int rank)
         {
             for (var c = 1; c <= ColorCount; c++)
             {
@@ -269,7 +269,7 @@ namespace CardJong.InGame.Rules
             return false;
         }
 
-        private static bool IsEmpty(int[,] counts)
+        private bool IsEmpty(int[,] counts)
         {
             for (var c = 1; c <= ColorCount; c++)
             {

@@ -80,7 +80,7 @@ namespace CardJong.InGame.Rules
         /// <summary>
         /// ポンの選択肢。3 枚組には同一カード 2 枚、4 枚組には 3 枚が手札に必要。
         /// </summary>
-        private static void AddPonOptions(PlayerModel player, Card discarded, List<ClaimOption> options)
+        private void AddPonOptions(PlayerModel player, Card discarded, List<ClaimOption> options)
         {
             var inHand = player.CountInHand(discarded);
 
@@ -103,7 +103,7 @@ namespace CardJong.InGame.Rules
         /// <summary>
         /// チーの選択肢。3 枚組には同一マークの連続 2 枚、4 枚組には連続 3 枚が手札に必要。
         /// </summary>
-        private static void AddChiOptions(PlayerModel player, Card discarded, List<ClaimOption> options)
+        private void AddChiOptions(PlayerModel player, Card discarded, List<ClaimOption> options)
         {
             for (var i = 0; i < ClaimableMeldSizes.Length; i++)
             {
@@ -125,7 +125,7 @@ namespace CardJong.InGame.Rules
         /// 順子を埋めるのに必要なカードを手札から集める。揃わなければ null。
         /// 鳴いた組は同一マークで固定されるため、捨て札と同じマークのみを使う。
         /// </summary>
-        private static List<Card> TryCollectRunFromHand(PlayerModel player, Card discarded, int start, int size)
+        private List<Card> TryCollectRunFromHand(PlayerModel player, Card discarded, int start, int size)
         {
             var used = new List<Card>(size - 1);
             var remaining = new List<Card>(player.ConcealedCards);

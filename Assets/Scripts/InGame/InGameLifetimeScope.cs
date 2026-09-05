@@ -35,7 +35,7 @@ namespace CardJong.InGame
             builder.RegisterEntryPoint<InGameBootstrapper>();
         }
 
-        private static void RegisterCommonServices(IContainerBuilder builder, InGameSettings settings)
+        private void RegisterCommonServices(IContainerBuilder builder, InGameSettings settings)
         {
             builder.Register<IRandomService>(
                 _ => settings.UseFixedSeed
@@ -46,14 +46,14 @@ namespace CardJong.InGame
             builder.Register<InGameModel>(Lifetime.Singleton);
         }
 
-        private static void RegisterRules(IContainerBuilder builder)
+        private void RegisterRules(IContainerBuilder builder)
         {
             builder.Register<IHandAnalyzer, HandAnalyzer>(Lifetime.Singleton);
             builder.Register<IClaimResolver, ClaimResolver>(Lifetime.Singleton);
             builder.Register<IScoreCalculator, ScoreCalculator>(Lifetime.Singleton);
         }
 
-        private static void RegisterCommands(IContainerBuilder builder)
+        private void RegisterCommands(IContainerBuilder builder)
         {
             // インゲーム中ずっと持ち回るものではなく、処理が込み入ってきたステートが
             // その場で使う道具なので、要求のたびに作り直す。
@@ -61,7 +61,7 @@ namespace CardJong.InGame
             builder.Register<GameCommandFactory>(Lifetime.Singleton);
         }
 
-        private static void RegisterPlayerInput(IContainerBuilder builder)
+        private void RegisterPlayerInput(IContainerBuilder builder)
         {
             // UI 側は IPlayerInputPort、Agent 側は IPlayerInputRequester として同じ実体を見る。
             builder.Register<PlayerInputPort>(Lifetime.Singleton)
@@ -71,13 +71,13 @@ namespace CardJong.InGame
             builder.Register<IPlayerAgentRegistry, PlayerAgentRegistry>(Lifetime.Singleton);
         }
 
-        private static void RegisterPresentation(IContainerBuilder builder)
+        private void RegisterPresentation(IContainerBuilder builder)
         {
             // View を実装したら、この 1 行を実装クラスに差し替える。
             builder.Register<IInGamePresentation, DebugLogInGamePresentation>(Lifetime.Singleton);
         }
 
-        private static void RegisterStateMachine(IContainerBuilder builder)
+        private void RegisterStateMachine(IContainerBuilder builder)
         {
             builder.Register<IStateFactory<InGameStateType>, InGameStateFactory>(Lifetime.Singleton);
 

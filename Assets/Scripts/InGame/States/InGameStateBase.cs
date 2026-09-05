@@ -16,7 +16,7 @@ namespace CardJong.InGame.States
         /// <summary>
         /// 制限時間つきで手番の行動を決めさせる。時間切れの場合は fallback を返す。
         /// </summary>
-        protected static UniTask<TurnAction> DecideTurnActionAsync(
+        protected UniTask<TurnAction> DecideTurnActionAsync(
             IPlayerAgent agent,
             TurnDecisionContext context,
             TurnAction fallback,
@@ -30,7 +30,7 @@ namespace CardJong.InGame.States
         /// <summary>
         /// 制限時間つきで宣言を決めさせる。時間切れの場合は fallback を返す。
         /// </summary>
-        protected static UniTask<ClaimDeclaration> DecideClaimAsync(
+        protected UniTask<ClaimDeclaration> DecideClaimAsync(
             IPlayerAgent agent,
             ClaimDecisionContext context,
             ClaimDeclaration fallback,
@@ -41,7 +41,7 @@ namespace CardJong.InGame.States
                 context.TimeLimitSeconds,
                 cancellationToken);
 
-        private static async UniTask<T> DecideWithTimeoutAsync<T>(
+        private async UniTask<T> DecideWithTimeoutAsync<T>(
             Func<CancellationToken, UniTask<T>> decide,
             T fallback,
             float timeLimitSeconds,
