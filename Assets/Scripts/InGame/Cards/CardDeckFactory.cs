@@ -22,17 +22,29 @@ namespace CardJong.InGame.Cards
         /// </summary>
         private static readonly Suit[] AllSuits = { Suit.Spade, Suit.Heart, Suit.Diamond, Suit.Club };
 
-        /// <summary>208 枚の山札を生成する（未シャッフル）。</summary>
-        public static List<Card> CreateFullDeck()
+        /// <summary>
+        /// 208 枚ぶんのテンプレート。中身は局をまたいでも変わらないので、
+        /// 局のたびに 208 枚を作り直さず、ここから複製する。
+        /// </summary>
+        private static readonly Card[] FullDeckTemplate = CreateFullDeckTemplate();
+
+        /// <summary>
+        /// 208 枚の山札を生成する（未シャッフル）。
+        /// Card は不変なので、テンプレートの参照をそのまま写すだけでよい。
+        /// </summary>
+        public static List<Card> CreateFullDeck() => new(FullDeckTemplate);
+
+        private static Card[] CreateFullDeckTemplate()
         {
-            var cards = new List<Card>(TotalCardCount);
+            var cards = new Card[TotalCardCount];
+            var index = 0;
             for (var deck = 0; deck < DeckCount; deck++)
             {
                 foreach (var suit in AllSuits)
                 {
                     for (var rank = (int)Rank.Ace; rank <= (int)Rank.King; rank++)
                     {
-                        cards.Add(new Card(suit, (Rank)rank));
+                        cards[index++] = new Card(suit, (Rank)rank);
                     }
                 }
             }
