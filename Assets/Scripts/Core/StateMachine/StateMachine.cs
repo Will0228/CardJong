@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using R3;
+using VContainer;
 
 namespace CardJong.Core
 {
@@ -48,6 +49,7 @@ namespace CardJong.Core
 
         public Observable<TKey> OnStateEntered => _onStateEntered;
 
+        [Inject]
         public StateMachine(IStateFactory<TKey> stateFactory)
         {
             _stateFactory = stateFactory ?? throw new ArgumentNullException(nameof(stateFactory));

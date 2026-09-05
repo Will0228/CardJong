@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using CardJong.Core;
+using VContainer;
 
 namespace CardJong.InGame.Actions
 {
@@ -13,6 +14,7 @@ namespace CardJong.InGame.Actions
         private readonly IRandomService _random;
         private readonly List<IPlayerAgent> _agents = new();
 
+        [Inject]
         public PlayerAgentRegistry(IPlayerInputRequester inputRequester, IRandomService random)
         {
             _inputRequester = inputRequester ?? throw new ArgumentNullException(nameof(inputRequester));

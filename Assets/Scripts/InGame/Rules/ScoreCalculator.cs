@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using CardJong.InGame.Cards;
 using CardJong.InGame.Model;
+using VContainer;
 
 namespace CardJong.InGame.Rules
 {
@@ -22,6 +23,7 @@ namespace CardJong.InGame.Rules
     {
         private readonly IHandAnalyzer _handAnalyzer;
 
+        [Inject]
         public ScoreCalculator(IHandAnalyzer handAnalyzer)
         {
             _handAnalyzer = handAnalyzer ?? throw new ArgumentNullException(nameof(handAnalyzer));

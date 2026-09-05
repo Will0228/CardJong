@@ -5,6 +5,7 @@ using CardJong.InGame.Actions;
 using CardJong.InGame.Cards;
 using CardJong.InGame.Model;
 using CardJong.InGame.Rules;
+using VContainer;
 
 namespace CardJong.InGame.Commands
 {
@@ -17,6 +18,7 @@ namespace CardJong.InGame.Commands
         private readonly IHandAnalyzer _handAnalyzer;
         private readonly IScoreCalculator _scoreCalculator;
 
+        [Inject]
         public GameCommandFactory(InGameModel model, IHandAnalyzer handAnalyzer, IScoreCalculator scoreCalculator)
         {
             _model = model ?? throw new ArgumentNullException(nameof(model));
