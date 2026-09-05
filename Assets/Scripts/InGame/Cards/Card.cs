@@ -1,22 +1,13 @@
-using System;
-
 namespace CardJong.InGame.Cards
 {
     /// <summary>
     /// 1 枚のカード。52 枚 x 4 デッキ構成のため、同じ値のカードは最大 4 枚存在する。
+    /// マークとランクが同じなら同じ札として扱うので、等値比較は record に任せる。
     /// </summary>
-    public readonly struct Card : IEquatable<Card>
+    /// <param name="Suit">マーク。</param>
+    /// <param name="Rank">ランク。</param>
+    public sealed record Card(Suit Suit, Rank Rank)
     {
-        public Suit Suit { get; }
-
-        public Rank Rank { get; }
-
-        public Card(Suit suit, Rank rank)
-        {
-            Suit = suit;
-            Rank = rank;
-        }
-
         /// <summary>色。♥♦ が赤、♠♣ が黒。</summary>
         public CardColor Color => Suit is Suit.Heart or Suit.Diamond ? CardColor.Red : CardColor.Black;
 
@@ -28,16 +19,6 @@ namespace CardJong.InGame.Cards
 
         /// <summary>色とランクだけを見たパターン。上がり形の判定・待ちの表現に使う。</summary>
         public CardPattern Pattern => new(Color, Rank);
-
-        public bool Equals(Card other) => Suit == other.Suit && Rank == other.Rank;
-
-        public override bool Equals(object obj) => obj is Card other && Equals(other);
-
-        public override int GetHashCode() => ((int)Suit << 8) | (int)Rank;
-
-        public static bool operator ==(Card left, Card right) => left.Equals(right);
-
-        public static bool operator !=(Card left, Card right) => !left.Equals(right);
 
         public override string ToString() => $"{SuitSymbol(Suit)}{RankLabel(Rank)}";
 

@@ -39,7 +39,7 @@ namespace CardJong.InGame.Commands
         public UniTask ExecuteAsync(CancellationToken cancellationToken)
         {
             var player = _model.GetPlayer(_seat);
-            var winningCard = player.LastDrawnCard.Value;
+            var winningCard = player.LastDrawnCard;
 
             var win = _scoreCalculator.Evaluate(_model, _seat, loserSeat: -1, winningCard);
             _model.SetPendingWin(win);

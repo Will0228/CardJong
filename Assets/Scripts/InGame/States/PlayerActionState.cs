@@ -97,7 +97,7 @@ namespace CardJong.InGame.States
 
         private Card GetDefaultDiscard(PlayerModel player)
         {
-            if (player.LastDrawnCard.HasValue) return player.LastDrawnCard.Value;
+            if (player.LastDrawnCard != null) return player.LastDrawnCard;
 
             // 鳴いた直後はツモ札が無いので、手札の末尾を捨てる
             return player.ConcealedCards[player.ConcealedCards.Count - 1];

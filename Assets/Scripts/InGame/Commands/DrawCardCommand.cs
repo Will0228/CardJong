@@ -12,8 +12,8 @@ namespace CardJong.InGame.Commands
         private readonly InGameModel _model;
         private readonly int _seat;
 
-        /// <summary>実行後にツモった札。</summary>
-        public Card? DrawnCard { get; private set; }
+        /// <summary>実行後にツモった札。未実行の場合は null。</summary>
+        public Card DrawnCard { get; private set; }
 
         public DrawCardCommand(InGameModel model, int seat)
         {

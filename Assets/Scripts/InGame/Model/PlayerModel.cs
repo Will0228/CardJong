@@ -33,8 +33,8 @@ namespace CardJong.InGame.Model
         /// <summary>手札・鳴き・捨て札のいずれかが変化したときに発火する。</summary>
         public Observable<Unit> OnHandChanged => _onHandChanged;
 
-        /// <summary>直近にツモした札。ツモ切りの既定操作に使う。</summary>
-        public Card? LastDrawnCard { get; private set; }
+        /// <summary>直近にツモした札。ツモ切りの既定操作に使う。無い場合は null。</summary>
+        public Card LastDrawnCard { get; private set; }
 
         /// <summary>門前（1 度も鳴いていない）かどうか。</summary>
         public bool IsMenzen => _melds.Count == 0;

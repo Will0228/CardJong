@@ -88,9 +88,10 @@ namespace CardJong.InGame.Rules
             // テンパイは上がり形に 1 枚足りない状態。
             if (concealedCards.Count != required - 1) return waits;
 
+            // 末尾の 1 枚を候補カードで差し替えながら総当りするので、置き場所だけ先に作る。
             var buffer = new List<Card>(concealedCards.Count + 1);
             buffer.AddRange(concealedCards);
-            buffer.Add(default);
+            buffer.Add(null);
             var lastIndex = buffer.Count - 1;
 
             for (var color = 1; color <= ColorCount; color++)
