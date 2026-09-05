@@ -34,8 +34,6 @@ namespace CardJong.InGame.Commands
             _card = card;
         }
 
-        public string DebugName => $"Ron(seat={_seat}, from={_fromSeat}, {_card})";
-
         public bool CanExecute()
         {
             var player = _model.GetPlayer(_seat);

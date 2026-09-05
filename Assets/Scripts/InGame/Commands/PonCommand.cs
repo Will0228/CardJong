@@ -28,8 +28,6 @@ namespace CardJong.InGame.Commands
             _usedCards = usedCards;
         }
 
-        public string DebugName => $"Pon(seat={_seat}, from={_fromSeat}, {_claimedCard} x{_usedCards.Count + 1})";
-
         public bool CanExecute()
         {
             // 鳴いた組は同一マークで固定されるので、使う札はすべて捨て札と同一カードでなければならない。

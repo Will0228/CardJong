@@ -22,8 +22,6 @@ namespace CardJong.InGame.Commands
             _declareRiichi = declareRiichi;
         }
 
-        public string DebugName => $"Discard(seat={_seat}, {_card}{(_declareRiichi ? ", riichi" : string.Empty)})";
-
         public bool CanExecute()
         {
             var player = _model.GetPlayer(_seat);

@@ -27,7 +27,7 @@ namespace CardJong.Core.Commands
             if (!command.CanExecute())
             {
                 // 不正なコマンドはゲームロジック側のバグなので握り潰さずに知らせる。
-                Debug.LogError($"[Command] 実行条件を満たしていません: {command.DebugName}");
+                Debug.LogError($"[Command] 実行条件を満たしていません: {command.GetType().Name}");
                 return false;
             }
 

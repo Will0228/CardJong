@@ -26,8 +26,6 @@ namespace CardJong.InGame.Commands
             _seat = seat;
         }
 
-        public string DebugName => $"Tsumo(seat={_seat})";
-
         public bool CanExecute()
         {
             if (!_model.CanDeclareTsumo) return false;

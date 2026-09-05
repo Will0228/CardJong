@@ -12,9 +12,6 @@ namespace CardJong.Core.Commands
     /// </remarks>
     public interface IGameCommand
     {
-        /// <summary>ログ表示用の名前。</summary>
-        string DebugName { get; }
-
         /// <summary>現在のゲーム状態でこのコマンドが実行可能か。</summary>
         bool CanExecute();
 

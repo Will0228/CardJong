@@ -21,8 +21,6 @@ namespace CardJong.InGame.Commands
             _seat = seat;
         }
 
-        public string DebugName => $"Draw(seat={_seat})";
-
         public bool CanExecute() => !_model.Wall.IsLiveWallEmpty;
 
         public UniTask ExecuteAsync(CancellationToken cancellationToken)

@@ -22,8 +22,6 @@ namespace CardJong.InGame.Commands
             _wasRonAvailable = wasRonAvailable;
         }
 
-        public string DebugName => $"Pass(seat={_seat}{(_wasRonAvailable ? ", missed ron" : string.Empty)})";
-
         public bool CanExecute() => true;
 
         public UniTask ExecuteAsync(CancellationToken cancellationToken)

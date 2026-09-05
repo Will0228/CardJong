@@ -29,8 +29,6 @@ namespace CardJong.InGame.Commands
             _usedCards = usedCards;
         }
 
-        public string DebugName => $"Chi(seat={_seat}, from={_fromSeat}, {_claimedCard} x{_usedCards.Count + 1})";
-
         public bool CanExecute()
         {
             // チーは上家からのみ
