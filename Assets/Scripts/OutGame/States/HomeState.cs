@@ -2,6 +2,7 @@ using System.Threading;
 using CardJong.Core;
 using CardJong.OutGame.Presentation.Home;
 using Cysharp.Threading.Tasks;
+using R3;
 using VContainer;
 
 namespace CardJong.OutGame.States
@@ -21,11 +22,16 @@ namespace CardJong.OutGame.States
 
         protected override async UniTask EnterAsync(CancellationToken cancellationToken)
         {
-            await _presenter.WaitForGameStartAsync(cancellationToken);
-
             // 遷移先のステートは無い。ここを抜けた後のシーン切り替えは
             // OutGameBootstrapper が受け持つ。
             RequestExit();
+        }
+
+        private void SetEvent()
+        {
+            _presenter.OnStartClicked()
+                .Subscribe(_ => RequestExit())
+                .AddTo(disposables);
         }
     }
 }

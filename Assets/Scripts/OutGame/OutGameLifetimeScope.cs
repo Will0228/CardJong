@@ -2,6 +2,7 @@ using CardJong.Core;
 using CardJong.Core.Scenes;
 using CardJong.OutGame.Presentation.Home;
 using CardJong.OutGame.States;
+using UnityEngine;
 using VContainer;
 using VContainer.Unity;
 
@@ -12,6 +13,8 @@ namespace CardJong.OutGame
     /// </summary>
     public sealed class OutGameLifetimeScope : LifetimeScope
     {
+        [SerializeField] private HomeView _homeView;
+        
         protected override void Configure(IContainerBuilder builder)
         {
             builder.Register<ISceneLoader, SceneLoader>(Lifetime.Singleton);
@@ -24,7 +27,7 @@ namespace CardJong.OutGame
 
         private void RegisterPresentation(IContainerBuilder builder)
         {
-            builder.RegisterComponentInHierarchy<HomeView>().As<IHomeView>();
+            builder.RegisterComponent(_homeView);
             builder.Register<IHomePresenter, HomePresenter>(Lifetime.Singleton);
         }
 

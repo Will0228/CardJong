@@ -383,6 +383,7 @@ MonoBehaviour:
     TypeName: 
   autoRun: 1
   autoInjectGameObjects: []
+  _homeView: {fileID: 400002}
 --- !u!1 &400000
 GameObject:
   m_ObjectHideFlags: 0
@@ -429,10 +430,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: CardJong.OutGame::CardJong.OutGame.Presentation.Home.HomeView
   _startButton: {fileID: 1456667882}
-  _japaneseTexts:
-  - {fileID: 98603940}
-  - {fileID: 1558857947}
-  - {fileID: 1091100648}
 --- !u!1 &98603937
 GameObject:
   m_ObjectHideFlags: 0
@@ -504,7 +501,7 @@ MonoBehaviour:
     m_FontStyle: 0
     m_BestFit: 0
     m_MinSize: 10
-    m_MaxSize: 40
+    m_MaxSize: 120
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -556,7 +553,7 @@ MonoBehaviour:
     m_FontStyle: 0
     m_BestFit: 0
     m_MinSize: 10
-    m_MaxSize: 40
+    m_MaxSize: 42
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
