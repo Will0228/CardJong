@@ -1,0 +1,166 @@
+using System;
+using System.Collections.Generic;
+using CardJong.InGame.Cards;
+using CardJong.InGame.Model;
+using VContainer;
+
+namespace CardJong.InGame.Rules
+{
+    /// <summary>
+    /// 鳴き・ロンの成立条件を判定する。
+    /// 上がり形は色レベルで判定するのに対し、鳴きは同一マークで n-1 枚が必要という非対称性がある。
+    /// </summary>
+    public sealed class ClaimResolver : IClaimResolver
+    {
+        /// <summary>鳴きで作れる組は 3 枚組・4 枚組のみ。</summary>
+        private static readonly int[] ClaimableMeldSizes = { 3, 4 };
+
+        private readonly InGameModel _model;
+        private readonly IHandAnalyzer _handAnalyzer;
+
+        /// <summary>
+        /// ロン判定で使う「手札 + 捨て札」の作業用リスト。
+        /// 捨て札 1 枚につき人数分呼ばれるので、そのたびに作り直さず使い回す。
+        /// </summary>
+        private readonly List<Card> _ronHandBuffer = new(InGameModel.WinningHandSize);
+
+        [Inject]
+        public ClaimResolver(InGameModel model, IHandAnalyzer handAnalyzer)
+        {
+            _model = model ?? throw new ArgumentNullException(nameof(model));
+            _handAnalyzer = handAnalyzer ?? throw new ArgumentNullException(nameof(handAnalyzer));
+        }
+
+        public IReadOnlyList<ClaimOption> GetOptions(int seat, DiscardInfo discard)
+        {
+            var options = new List<ClaimOption>();
+            if (seat == discard.Seat) return options;
+
+            var player = _model.GetPlayer(seat);
+
+            if (CanRon(player, discard.Card))
+            {
+                options.Add(ClaimOption.Ron());
+            }
+
+            AddPonOptions(player, discard.Card, options);
+
+            // チーは上家の捨て札からのみ
+            if (_model.GetUpperSeat(seat) == discard.Seat)
+            {
+                AddChiOptions(player, discard.Card, options);
+            }
+
+            return options;
+        }
+
+        /// <summary>
+        /// ロンできるか。上がり形が完成していて、かつフリテンでないこと。
+        /// </summary>
+        /// <remarks>
+        /// TODO: 「役なしでは上がれない」の判定は <see cref="IScoreCalculator"/> 側の役判定が
+        /// 揃ってから、ここに組み込む。
+        /// </remarks>
+        private bool CanRon(PlayerModel player, Card discarded)
+        {
+            // 見逃しによる一時フリテン
+            if (player.Status.IsTemporaryFuriten) return false;
+
+            _ronHandBuffer.Clear();
+            _ronHandBuffer.AddRange(player.Cards.ConcealedCards);
+            _ronHandBuffer.Add(discarded);
+
+            if (!_handAnalyzer.IsWinningHand(_ronHandBuffer, player.Cards.Melds)) return false;
+
+            // フリテン: 自分の上がり札のいずれかが自分の捨て札に含まれる場合はロンできない
+            var waits = _handAnalyzer.EnumerateWaits(player.Cards.ConcealedCards, player.Cards.Melds);
+            for (var i = 0; i < waits.Count; i++)
+            {
+                for (var j = 0; j < player.Cards.Discards.Count; j++)
+                {
+                    if (waits[i].Matches(player.Cards.Discards[j])) return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// ポンの選択肢。3 枚組には同一カード 2 枚、4 枚組には 3 枚が手札に必要。
+        /// </summary>
+        private void AddPonOptions(PlayerModel player, Card discarded, List<ClaimOption> options)
+        {
+            var inHand = player.Cards.CountSameCardsInHand(discarded);
+
+            for (var i = 0; i < ClaimableMeldSizes.Length; i++)
+            {
+                var meldSize = ClaimableMeldSizes[i];
+                var needed = meldSize - 1;
+                if (inHand < needed) continue;
+
+                var used = new Card[needed];
+                for (var j = 0; j < needed; j++)
+                {
+                    used[j] = discarded;
+                }
+
+                options.Add(new ClaimOption(ClaimType.Pon, used, meldSize));
+            }
+        }
+
+        /// <summary>
+        /// チーの選択肢。捨て札を含む順子を、手札の同一マークの札で埋められるなら成立する。
+        /// 手札側の 2 枚（4 枚組なら 3 枚）は連続している必要はなく、2・4 を持っていれば
+        /// 捨てられた 3 でチーできる。順子の開始位置を総当りして、足りないランクを手札から集める。
+        /// </summary>
+        private void AddChiOptions(PlayerModel player, Card discarded, List<ClaimOption> options)
+        {
+            for (var i = 0; i < ClaimableMeldSizes.Length; i++)
+            {
+                var meldSize = ClaimableMeldSizes[i];
+
+                for (var start = 1; start + meldSize - 1 <= CardRunUtility.ExtendedRankCount; start++)
+                {
+                    if (!CardRunUtility.RunContainsRank(start, meldSize, (int)discarded.Rank)) continue;
+
+                    var used = TryCollectRunFromHand(player, discarded, start, meldSize);
+                    if (used == null) continue;
+
+                    options.Add(new ClaimOption(ClaimType.Chi, used, meldSize));
+                }
+            }
+        }
+
+        /// <summary>
+        /// 順子を埋めるのに必要なカードを手札から集める。揃わなければ null。
+        /// 鳴いた組は同一マークで固定されるため、捨て札と同じマークのみを使う。
+        /// </summary>
+        private List<Card> TryCollectRunFromHand(PlayerModel player, Card discarded, int start, int size)
+        {
+            var used = new List<Card>(size - 1);
+            var remaining = new List<Card>(player.Cards.ConcealedCards);
+            var isDiscardedUsed = false;
+
+            for (var p = start; p < start + size; p++)
+            {
+                var rank = (Rank)CardRunUtility.PositionToRank(p);
+
+                // 捨て札そのものが埋める位置
+                if (!isDiscardedUsed && rank == discarded.Rank)
+                {
+                    isDiscardedUsed = true;
+                    continue;
+                }
+
+                var needed = new Card(discarded.Suit, rank);
+                var index = remaining.IndexOf(needed);
+                if (index < 0) return null;
+
+                remaining.RemoveAt(index);
+                used.Add(needed);
+            }
+
+            return isDiscardedUsed ? used : null;
+        }
+    }
+}
