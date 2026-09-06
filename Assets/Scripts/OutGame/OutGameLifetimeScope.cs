@@ -25,7 +25,8 @@ namespace CardJong.OutGame
 
         private void RegisterPresentation(IContainerBuilder builder)
         {
-            builder.RegisterComponentInHierarchy<HomeView>().As<IHomePresentation>();
+            builder.Register<HomeModel>(Lifetime.Singleton).As<IHomePresentation>();
+            builder.RegisterComponentInHierarchy<HomeView>();
         }
 
         private void RegisterStateMachine(IContainerBuilder builder)
