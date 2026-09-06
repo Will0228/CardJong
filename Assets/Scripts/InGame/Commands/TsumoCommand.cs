@@ -41,7 +41,7 @@ namespace CardJong.InGame.Commands
             var player = _model.GetPlayer(_seat);
             var winningCard = player.Cards.LastDrawnCard;
 
-            var win = _scoreCalculator.Evaluate(_model, _seat, loserSeat: -1, winningCard);
+            var win = _scoreCalculator.Evaluate(_seat, loserSeat: -1, winningCard);
             _model.SetPendingWin(win);
             return UniTask.CompletedTask;
         }

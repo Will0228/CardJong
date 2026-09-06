@@ -57,7 +57,7 @@ namespace CardJong.InGame.States
         private RoundResult BuildWinResult()
         {
             var win = _model.PendingWin;
-            var deltas = _scoreCalculator.CalculateWinDeltas(_model, win);
+            var deltas = _scoreCalculator.CalculateWinDeltas(win);
 
             // 親が上がれば連荘
             var isDealerRepeat = win.WinnerSeat == _model.DealerSeat.CurrentValue;
@@ -67,7 +67,7 @@ namespace CardJong.InGame.States
         private RoundResult BuildDrawGameResult()
         {
             var tenpaiSeats = CollectTenpaiSeats();
-            var deltas = _scoreCalculator.CalculateDrawGameDeltas(_model, tenpaiSeats);
+            var deltas = _scoreCalculator.CalculateDrawGameDeltas(tenpaiSeats);
 
             // 親がテンパイなら連荘
             var isDealerRepeat = tenpaiSeats.Contains(_model.DealerSeat.CurrentValue);

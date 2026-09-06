@@ -21,17 +21,19 @@ namespace CardJong.InGame.Rules
     /// </remarks>
     public sealed class ScoreCalculator : IScoreCalculator
     {
+        private readonly InGameModel _model;
         private readonly IHandAnalyzer _handAnalyzer;
 
         [Inject]
-        public ScoreCalculator(IHandAnalyzer handAnalyzer)
+        public ScoreCalculator(InGameModel model, IHandAnalyzer handAnalyzer)
         {
+            _model = model ?? throw new ArgumentNullException(nameof(model));
             _handAnalyzer = handAnalyzer ?? throw new ArgumentNullException(nameof(handAnalyzer));
         }
 
-        public WinResult Evaluate(InGameModel model, int winnerSeat, int loserSeat, Card winningCard)
+        public WinResult Evaluate(int winnerSeat, int loserSeat, Card winningCard)
         {
-            var player = model.GetPlayer(winnerSeat);
+            var player = _model.GetPlayer(winnerSeat);
             var isTsumo = loserSeat < 0;
 
             // 上がり形の 14 枚（ロンの場合は上がり札を足した状態）
@@ -50,7 +52,7 @@ namespace CardJong.InGame.Rules
                 CollectYaku(player, decomposition, allCards, isTsumo, yaku);
             }
 
-            var doraCount = CountDora(model, allCards);
+            var doraCount = CountDora(_model, allCards);
 
             var han = doraCount;
             for (var i = 0; i < yaku.Count; i++)
@@ -61,19 +63,19 @@ namespace CardJong.InGame.Rules
             return new WinResult(winnerSeat, loserSeat, winningCard, yaku, doraCount, han, IsYakuman: false);
         }
 
-        public int[] CalculateWinDeltas(InGameModel model, WinResult win)
+        public int[] CalculateWinDeltas(WinResult win)
         {
-            var deltas = new int[model.PlayerCount];
-            var dealerSeat = model.DealerSeat.CurrentValue;
+            var deltas = new int[_model.PlayerCount];
+            var dealerSeat = _model.DealerSeat.CurrentValue;
             var isDealerWin = win.WinnerSeat == dealerSeat;
-            var honbaTotal = ScoreTable.HonbaBonus * model.Honba.CurrentValue;
+            var honbaTotal = ScoreTable.HonbaBonus * _model.Honba.CurrentValue;
 
             if (win.IsTsumo)
             {
-                var payerCount = model.PlayerCount - 1;
+                var payerCount = _model.PlayerCount - 1;
                 var honbaEach = payerCount > 0 ? honbaTotal / payerCount : 0;
 
-                for (var seat = 0; seat < model.PlayerCount; seat++)
+                for (var seat = 0; seat < _model.PlayerCount; seat++)
                 {
                     if (seat == win.WinnerSeat) continue;
 
@@ -92,11 +94,11 @@ namespace CardJong.InGame.Rules
             return deltas;
         }
 
-        public int[] CalculateDrawGameDeltas(InGameModel model, IReadOnlyList<int> tenpaiSeats)
+        public int[] CalculateDrawGameDeltas(IReadOnlyList<int> tenpaiSeats)
         {
-            var deltas = new int[model.PlayerCount];
+            var deltas = new int[_model.PlayerCount];
             var tenpaiCount = tenpaiSeats?.Count ?? 0;
-            var notenCount = model.PlayerCount - tenpaiCount;
+            var notenCount = _model.PlayerCount - tenpaiCount;
 
             // 全員テンパイ・全員ノーテンなら移動なし
             if (tenpaiCount == 0 || notenCount == 0) return deltas;
@@ -104,7 +106,7 @@ namespace CardJong.InGame.Rules
             var gainPerTenpai = ScoreTable.NotenPenaltyTotal / tenpaiCount;
             var payPerNoten = ScoreTable.NotenPenaltyTotal / notenCount;
 
-            for (var seat = 0; seat < model.PlayerCount; seat++)
+            for (var seat = 0; seat < _model.PlayerCount; seat++)
             {
                 deltas[seat] = Contains(tenpaiSeats, seat) ? gainPerTenpai : -payPerNoten;
             }

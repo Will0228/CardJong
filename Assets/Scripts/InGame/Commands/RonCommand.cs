@@ -51,7 +51,7 @@ namespace CardJong.InGame.Commands
             // 上がり札は放銃者の河から取り除く。
             _model.GetPlayer(_fromSeat).Cards.RemoveLastDiscard();
 
-            var win = _scoreCalculator.Evaluate(_model, _seat, _fromSeat, _card);
+            var win = _scoreCalculator.Evaluate(_seat, _fromSeat, _card);
             _model.SetPendingWin(win);
             _model.ClearLastDiscard();
             return UniTask.CompletedTask;
