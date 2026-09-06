@@ -1,12 +1,13 @@
-using CardJong.InGame.Model;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace CardJong.InGame.Presentation.Hud
 {
+    /// <summary>名札に出す 1 席ぶんの値。文字は Presenter が組み立てて渡す。</summary>
+    public record SeatPlateState(string Name, string Score, bool IsRiichi, bool IsCurrent);
+
     /// <summary>
-    /// 1 席ぶんの名札。持ち点と、親・リーチ・手番かどうかを出す。
-    /// 手牌や河は 3D の卓が見せるので、ここは文字情報だけを持つ。
+    /// 1 席ぶんの名札。渡された文字とフラグを見た目に写すだけで、誰の席かは知らない。
     /// </summary>
     public sealed class SeatPlateView : MonoBehaviour
     {
@@ -20,15 +21,9 @@ namespace CardJong.InGame.Presentation.Hud
         private Image _background;
         private Text _nameText;
         private Text _scoreText;
-        private string _relationLabel;
 
-        public int Seat { get; private set; }
-
-        public void Build(HudUiFactory factory, int seat, string relationLabel, Vector2 anchor, Vector2 position)
+        public void Build(HudUiFactory factory, Vector2 anchor, Vector2 position)
         {
-            Seat = seat;
-            _relationLabel = relationLabel;
-
             HudUiFactory.Anchor((RectTransform)transform, anchor, PlateSize, position);
 
             _background = gameObject.AddComponent<Image>();
@@ -50,15 +45,12 @@ namespace CardJong.InGame.Presentation.Hud
             HudUiFactory.SetFixedSize(_scoreText.rectTransform, -1f, 32f);
         }
 
-        public void Refresh(PlayerModel player, bool isDealer, bool isCurrent)
+        public void Refresh(SeatPlateState state)
         {
-            var dealerMark = isDealer ? "  【親】" : string.Empty;
-            var riichiMark = player.Status.IsRiichi ? "  リーチ" : string.Empty;
-
-            _nameText.text = $"{_relationLabel}  seat{player.Seat}{dealerMark}{riichiMark}";
-            _nameText.color = player.Status.IsRiichi ? RiichiColor : Color.white;
-            _scoreText.text = $"{player.Score.Points.CurrentValue:N0} 点";
-            _background.color = isCurrent ? CurrentColor : IdleColor;
+            _nameText.text = state.Name;
+            _nameText.color = state.IsRiichi ? RiichiColor : Color.white;
+            _scoreText.text = state.Score;
+            _background.color = state.IsCurrent ? CurrentColor : IdleColor;
         }
     }
 }
