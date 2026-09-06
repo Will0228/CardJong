@@ -68,6 +68,7 @@ namespace CardJong.InGame.Presentation.Hud
         private MahjongTableView _table;
         private HudUiFactory _factory;
         private HandUiView _handUi;
+        private DoraIndicatorView _doraUi;
 
         private RectTransform _root;
         private Text _roundText;
@@ -158,6 +159,7 @@ namespace CardJong.InGame.Presentation.Hud
             HudUiFactory.Stretch(_root);
 
             BuildInfoPanel();
+            BuildDoraPanel();
             BuildHandUi();
             BuildActionBar();
             BuildOverlay((RectTransform)canvas.transform);
@@ -182,6 +184,14 @@ namespace CardJong.InGame.Presentation.Hud
 
             _wallText = _factory.CreateText("Wall", panel, 22, TextAnchor.MiddleLeft, new Color(0.82f, 0.86f, 0.82f));
             HudUiFactory.SetFixedSize(_wallText.rectTransform, -1f, 28f);
+        }
+
+        /// <summary>ドラ表示札を局数の下に置く。雀魂と同じく画面の左上で常に見えるようにする。</summary>
+        private void BuildDoraPanel()
+        {
+            var rect = _factory.CreateRect("Dora", _root);
+            _doraUi = rect.gameObject.AddComponent<DoraIndicatorView>();
+            _doraUi.Build(_factory, _tileUiPrefab, new Vector2(24f, -(24f + InfoPanelSize.y + 12f)));
         }
 
         private void BuildHandUi()
@@ -291,7 +301,15 @@ namespace CardJong.InGame.Presentation.Hud
         {
             _subscriptions.Add(_model.RoundNumber.Subscribe(_ => RefreshInfo()));
             _subscriptions.Add(_model.Honba.Subscribe(_ => RefreshInfo()));
-            _subscriptions.Add(_model.Wall.LiveWallRemaining.Subscribe(_ => RefreshInfo()));
+
+            // ドラ表示札は生き山を確保する直前にめくられるので、残り枚数が動いた時点で
+            // めくられたことも拾える。
+            _subscriptions.Add(_model.Wall.LiveWallRemaining.Subscribe(_ =>
+            {
+                RefreshInfo();
+                RefreshDora();
+            }));
+
             _subscriptions.Add(_model.CurrentSeat.Subscribe(_ => RefreshSeatPlates()));
             _subscriptions.Add(_model.DealerSeat.Subscribe(_ => RefreshSeatPlates()));
 
@@ -312,6 +330,7 @@ namespace CardJong.InGame.Presentation.Hud
             RefreshInfo();
             RefreshSeatPlates();
             RefreshHand();
+            RefreshDora();
         }
 
         private void RefreshHand()
@@ -319,6 +338,11 @@ namespace CardJong.InGame.Presentation.Hud
             if (HumanSeat < 0) return;
 
             _handUi.Refresh(_model.GetPlayer(HumanSeat).Cards, _model.Wall);
+        }
+
+        private void RefreshDora()
+        {
+            _doraUi.Refresh(_model.Wall.DoraIndicators);
         }
 
         private void RefreshInfo()
