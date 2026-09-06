@@ -1,7 +1,7 @@
-using System.Threading;
-using Cysharp.Threading.Tasks;
+using R3;
 using UnityEngine;
 using UnityEngine.UI;
+using VContainer;
 
 namespace CardJong.OutGame.Presentation.Home
 {
@@ -12,9 +12,11 @@ namespace CardJong.OutGame.Presentation.Home
     /// InGame の HUD と同じく、シーンに置くのは空の GameObject 1 つで、
     /// Canvas から下は実行時にここで作る。画面が増えて組み立てが重複してきたら、
     /// InGame の HudUiFactory と合わせて共通の生成側へ切り出す。
+    /// ボタンを押せるかどうかや完了待ちといったデータは <see cref="HomeModel"/> が持ち、
+    /// ここは見た目の組み立てとボタンの取り次ぎだけに専念する。
     /// </remarks>
     [AddComponentMenu("CardJong/Home View")]
-    public sealed class HomeView : MonoBehaviour, IHomePresentation
+    public sealed class HomeView : MonoBehaviour
     {
         /// <summary>日本語のラベルを出すために借りる OS フォント。前から順に探す。</summary>
         private static readonly string[] FontCandidates =
@@ -38,43 +40,30 @@ namespace CardJong.OutGame.Presentation.Home
 
         private const int FontAtlasSize = 48;
 
+        private readonly CompositeDisposable _subscriptions = new();
+
+        private HomeModel _model;
         private Font _font;
         private Button _startButton;
-        private UniTaskCompletionSource _startRequest;
 
-        public async UniTask WaitForGameStartAsync(CancellationToken cancellationToken)
+        [Inject]
+        public void Construct(HomeModel model)
         {
-            var request = new UniTaskCompletionSource();
+            _model = model;
 
-            // 押される前に中断された場合も待機を解けるようにしておく。
-            using var registration = cancellationToken.Register(() => request.TrySetCanceled(cancellationToken));
-
-            _startRequest = request;
-            _startButton.interactable = true;
-
-            try
-            {
-                await request.Task;
-            }
-            finally
-            {
-                _startRequest = null;
-
-                // シーンの破棄で中断された場合、ボタンはすでに壊れている。
-                if (_startButton != null) _startButton.interactable = false;
-            }
-        }
-
-        private void Awake()
-        {
             // OS のフォントが 1 つも見つからない環境では、英数字だけの組み込みフォントに落ちる。
             var osFont = Font.CreateDynamicFontFromOSFont(FontCandidates, FontAtlasSize);
             _font = osFont != null ? osFont : Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
 
             BuildHierarchy();
+
+            // 現在値をすぐ受け取れるので、初期状態の反映もこれで兼ねる。
+            _subscriptions.Add(_model.CanStart.Subscribe(canStart => _startButton.interactable = canStart));
         }
 
-        private void OnStartClicked() => _startRequest?.TrySetResult();
+        private void OnDestroy() => _subscriptions.Dispose();
+
+        private void OnStartClicked() => _model.RequestStart();
 
         // ---- 画面の組み立て ----
 
@@ -82,6 +71,7 @@ namespace CardJong.OutGame.Presentation.Home
         {
             var canvas = CreateCanvas();
 
+            // 卓が透けて見えるよう、背景は敷かない。
             var background = CreateImage("Background", canvas.transform, BackgroundColor);
             Stretch(background.rectTransform);
 
@@ -95,9 +85,6 @@ namespace CardJong.OutGame.Presentation.Home
 
             _startButton = CreateStartButton(canvas.transform);
             Anchor(_startButton.image.rectTransform, StartButtonSize, new Vector2(0f, -140f));
-
-            // 待機に入るまでは押させない。押せる状態にするのは WaitForGameStartAsync。
-            _startButton.interactable = false;
             _startButton.onClick.AddListener(OnStartClicked);
         }
 
