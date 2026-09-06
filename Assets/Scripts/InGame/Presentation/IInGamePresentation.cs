@@ -6,7 +6,6 @@ namespace CardJong.InGame.Presentation
 {
     /// <summary>
     /// 演出・画面表示の窓口。State はここを await するだけで、実際の見た目には関与しない。
-    /// View を作るまでは <see cref="DebugLogInGamePresentation"/> で流れだけ確認できる。
     /// </summary>
     public interface IInGamePresentation
     {
