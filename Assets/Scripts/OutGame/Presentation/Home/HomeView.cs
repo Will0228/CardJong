@@ -1,16 +1,15 @@
 using R3;
 using UnityEngine;
 using UnityEngine.UI;
-using VContainer;
 
 namespace CardJong.OutGame.Presentation.Home
 {
     /// <summary>
-    /// ホーム画面。タイトルやボタンの配置・見た目はシーン側で組んであり、
-    /// ここではボタンの取り次ぎと、日本語ラベルへのフォント割り当てだけを行う。
+    /// ホーム画面。タイトルやボタンの配置・見た目はシーン側で組んである。
+    /// ここは見た目の操作とユーザー操作の通知に専念し、進行の判断は Presenter に任せる。
     /// </summary>
     [AddComponentMenu("CardJong/Home View")]
-    public sealed class HomeView : MonoBehaviour
+    public sealed class HomeView : MonoBehaviour, IHomeView
     {
         /// <summary>日本語のラベルを出すために借りる OS フォント。前から順に探す。</summary>
         private static readonly string[] FontCandidates =
@@ -30,18 +29,14 @@ namespace CardJong.OutGame.Presentation.Home
         [Tooltip("日本語を表示するテキスト。実行環境の OS フォントをここへ割り当てる。")]
         [SerializeField] private Text[] _japaneseTexts;
 
-        private readonly CompositeDisposable _subscriptions = new();
+        public Observable<Unit> OnStartClicked => _startButton.OnClickAsObservable();
 
-        [Inject]
-        public void Construct(HomeModel model)
+        public bool CanStart
         {
-            AssignJapaneseFont();
-
-            _subscriptions.Add(_startButton.OnClickAsObservable().Subscribe(_ => model.RequestStart()));
-            _subscriptions.Add(model.CanStart.SubscribeToInteractable(_startButton));
+            set => _startButton.interactable = value;
         }
 
-        private void OnDestroy() => _subscriptions.Dispose();
+        private void Awake() => AssignJapaneseFont();
 
         /// <summary>
         /// OS のフォントが 1 つも見つからない環境では、Text にあらかじめ設定してある

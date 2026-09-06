@@ -1,6 +1,5 @@
 using CardJong.Core;
 using CardJong.Core.Scenes;
-using CardJong.OutGame.Presentation;
 using CardJong.OutGame.Presentation.Home;
 using CardJong.OutGame.States;
 using VContainer;
@@ -25,8 +24,8 @@ namespace CardJong.OutGame
 
         private void RegisterPresentation(IContainerBuilder builder)
         {
-            builder.Register<HomeModel>(Lifetime.Singleton).As<IHomePresentation>().AsSelf();
-            builder.RegisterComponentInHierarchy<HomeView>();
+            builder.RegisterComponentInHierarchy<HomeView>().As<IHomeView>();
+            builder.Register<IHomePresenter, HomePresenter>(Lifetime.Singleton);
         }
 
         private void RegisterStateMachine(IContainerBuilder builder)
