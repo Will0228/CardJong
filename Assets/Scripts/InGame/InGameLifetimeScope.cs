@@ -4,6 +4,7 @@ using CardJong.InGame.Actions;
 using CardJong.InGame.Commands;
 using CardJong.InGame.Model;
 using CardJong.InGame.Presentation;
+using CardJong.InGame.Presentation.Hud;
 using CardJong.InGame.Rules;
 using CardJong.InGame.States;
 using UnityEngine;
@@ -73,8 +74,7 @@ namespace CardJong.InGame
 
         private void RegisterPresentation(IContainerBuilder builder)
         {
-            // View を実装したら、この 1 行を実装クラスに差し替える。
-            builder.Register<IInGamePresentation, DebugLogInGamePresentation>(Lifetime.Singleton);
+            builder.RegisterComponentInHierarchy<InGameHudView>().As<IInGamePresentation>();
         }
 
         private void RegisterStateMachine(IContainerBuilder builder)
