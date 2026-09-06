@@ -13,7 +13,9 @@ namespace CardJong.InGame.States
 {
     /// <summary>
     /// 待機（待機パターン）。捨て札に対して他家がロン・ポン・チーを宣言できる。
-    /// 全員の宣言を並行して集め、ロン &gt; ポン &gt; チー の優先順位で 1 つだけ通す。
+    /// ロン &gt; ポン &gt; チー の優先順位のうち、上位の宣言が確定した時点で下位の返答を
+    /// 待たずに結果を確定する。同じ優先度どうしは頭ハネ（捨てたプレイヤーに近い席が優先）で
+    /// 決まるため、同じ階層の返答は全員ぶん待ってから確定する。
     /// </summary>
     public sealed class ClaimWaitState : InGameStateBase
     {
@@ -98,7 +100,13 @@ namespace CardJong.InGame.States
         {
             _ronAvailableSeats.Clear();
 
-            var tasks = new List<UniTask<ClaimDeclaration>>(_model.PlayerCount - 1);
+            var declarations = new List<ClaimDeclaration>(_model.PlayerCount - 1);
+            var ronTasks = new List<UniTask<ClaimDeclaration>>();
+            var ponTasks = new List<UniTask<ClaimDeclaration>>();
+            var chiTasks = new List<UniTask<ClaimDeclaration>>();
+
+            // 上位の階層が確定した時点で下位の返答を打ち切れるように、専用のトークンを挟む。
+            using var tierCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
             for (var seat = 0; seat < _model.PlayerCount; seat++)
             {
@@ -107,13 +115,8 @@ namespace CardJong.InGame.States
                 var options = _claimResolver.GetOptions(seat, discard);
                 if (options.Count == 0)
                 {
-                    tasks.Add(UniTask.FromResult(ClaimDeclaration.Pass(seat)));
+                    declarations.Add(ClaimDeclaration.Pass(seat));
                     continue;
-                }
-
-                if (ContainsRon(options))
-                {
-                    _ronAvailableSeats.Add(seat);
                 }
 
                 var context = new ClaimDecisionContext(
@@ -123,14 +126,57 @@ namespace CardJong.InGame.States
                     options,
                     _settings.ClaimWaitSeconds);
 
-                tasks.Add(DecideClaimAsync(
+                var task = DecideClaimAsync(
                     _agentRegistry.Get(seat),
                     context,
                     ClaimDeclaration.Pass(seat),
-                    cancellationToken));
+                    tierCancellation.Token);
+
+                // 席の階層は、その席が選べる最も優先度の高い選択肢で決まる。
+                if (ContainsOptionType(options, ClaimType.Ron))
+                {
+                    _ronAvailableSeats.Add(seat);
+                    ronTasks.Add(task);
+                }
+                else if (ContainsOptionType(options, ClaimType.Pon))
+                {
+                    ponTasks.Add(task);
+                }
+                else
+                {
+                    chiTasks.Add(task);
+                }
             }
 
-            return await UniTask.WhenAll(tasks);
+            // ロンが出せる席が全員決め終わるまでは待つ必要がある（複数ロン時の頭ハネのため）。
+            // 決め終わった時点でロンが 1 つでもあれば、ポン・チーの結果は覆らないので打ち切る。
+            if (ronTasks.Count > 0)
+            {
+                declarations.AddRange(await UniTask.WhenAll(ronTasks));
+                if (ContainsDeclarationType(declarations, ClaimType.Ron))
+                {
+                    tierCancellation.Cancel();
+                    return declarations.ToArray();
+                }
+            }
+
+            // ポンも同様に、出た時点でチーの結果は覆らない。
+            if (ponTasks.Count > 0)
+            {
+                declarations.AddRange(await UniTask.WhenAll(ponTasks));
+                if (ContainsDeclarationType(declarations, ClaimType.Pon))
+                {
+                    tierCancellation.Cancel();
+                    return declarations.ToArray();
+                }
+            }
+
+            if (chiTasks.Count > 0)
+            {
+                declarations.AddRange(await UniTask.WhenAll(chiTasks));
+            }
+
+            return declarations.ToArray();
         }
 
         /// <summary>ロンできたのに上がらなかった席を一時フリテンにする。</summary>
@@ -149,11 +195,21 @@ namespace CardJong.InGame.States
             }
         }
 
-        private bool ContainsRon(IReadOnlyList<ClaimOption> options)
+        private bool ContainsOptionType(IReadOnlyList<ClaimOption> options, ClaimType type)
         {
             for (var i = 0; i < options.Count; i++)
             {
-                if (options[i].Type == ClaimType.Ron) return true;
+                if (options[i].Type == type) return true;
+            }
+
+            return false;
+        }
+
+        private bool ContainsDeclarationType(List<ClaimDeclaration> declarations, ClaimType type)
+        {
+            for (var i = 0; i < declarations.Count; i++)
+            {
+                if (declarations[i].Type == type) return true;
             }
 
             return false;
