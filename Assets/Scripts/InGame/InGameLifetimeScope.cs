@@ -1,10 +1,12 @@
 using CardJong.Core;
 using CardJong.Core.Commands;
+using CardJong.Core.Scenes;
 using CardJong.InGame.Actions;
 using CardJong.InGame.Commands;
 using CardJong.InGame.Model;
 using CardJong.InGame.Presentation;
 using CardJong.InGame.Presentation.Hud;
+using CardJong.InGame.Presentation.Table;
 using CardJong.InGame.Rules;
 using CardJong.InGame.States;
 using UnityEngine;
@@ -45,6 +47,7 @@ namespace CardJong.InGame
                 Lifetime.Singleton);
 
             builder.Register<InGameModel>(Lifetime.Singleton);
+            builder.Register<ISceneLoader, SceneLoader>(Lifetime.Singleton);
         }
 
         private void RegisterRules(IContainerBuilder builder)
@@ -74,6 +77,7 @@ namespace CardJong.InGame
 
         private void RegisterPresentation(IContainerBuilder builder)
         {
+            builder.RegisterComponentInHierarchy<MahjongTableView>();
             builder.RegisterComponentInHierarchy<InGameHudView>().As<IInGamePresentation>();
         }
 
