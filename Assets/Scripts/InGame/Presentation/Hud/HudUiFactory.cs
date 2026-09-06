@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using CardJong.InGame.Presentation.Tiles;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -63,6 +61,16 @@ namespace CardJong.InGame.Presentation.Hud
             element.flexibleWidth = 0f;
             element.flexibleHeight = 0f;
             return element;
+        }
+
+        /// <summary>画面の一点に、決まった大きさで留める。レイアウトグループの外に置く箱に使う。</summary>
+        public static void Anchor(RectTransform rect, Vector2 anchor, Vector2 size, Vector2 position)
+        {
+            rect.anchorMin = anchor;
+            rect.anchorMax = anchor;
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.sizeDelta = size;
+            rect.anchoredPosition = position;
         }
 
         /// <summary>高さだけ固定し、横は親の余りいっぱいに広げる。</summary>
@@ -177,29 +185,5 @@ namespace CardJong.InGame.Presentation.Hud
             return rect;
         }
 
-        /// <summary>
-        /// カードを並べる箱の中身を count 枚ぶんに合わせる。
-        /// 局をまたいで作り直すと重いので、作った View は残したまま表示だけ切り替える。
-        /// </summary>
-        public void EnsureCardViews(
-            List<CardView> views,
-            RectTransform parent,
-            CardFaceAtlas atlas,
-            int count,
-            Vector2 size)
-        {
-            while (views.Count < count)
-            {
-                var rect = CreateRect($"Card{views.Count}", parent);
-                var view = rect.gameObject.AddComponent<CardView>();
-                view.Build(this, atlas, size);
-                views.Add(view);
-            }
-
-            for (var i = 0; i < views.Count; i++)
-            {
-                views[i].gameObject.SetActive(i < count);
-            }
-        }
     }
 }
