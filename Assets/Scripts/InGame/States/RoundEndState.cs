@@ -14,7 +14,7 @@ namespace CardJong.InGame.States
     /// 局の終了。点数を移動し、連荘するかを決めて次局かゲーム終了へ進める。
     /// 上がりが無いままここに来た場合は流局として扱う。
     /// </summary>
-    public sealed class RoundEndState : InGameStateBase
+    public sealed class RoundEndState : AsyncStateBase<InGameStateType>
     {
         private static readonly int[] EmptySeats = Array.Empty<int>();
 

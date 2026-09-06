@@ -17,7 +17,7 @@ namespace CardJong.InGame.States
     /// 待たずに結果を確定する。同じ優先度どうしは頭ハネ（捨てたプレイヤーに近い席が優先）で
     /// 決まるため、同じ階層の返答は全員ぶん待ってから確定する。
     /// </summary>
-    public sealed class ClaimWaitState : InGameStateBase
+    public sealed class ClaimWaitState : AsyncStateBase<InGameStateType>
     {
         private readonly InGameModel _model;
         private readonly InGameSettings _settings;
@@ -194,6 +194,18 @@ namespace CardJong.InGame.States
                     cancellationToken);
             }
         }
+
+        /// <summary>制限時間つきで宣言を決めさせる。時間切れの場合は fallback を返す。</summary>
+        private static UniTask<ClaimDeclaration> DecideClaimAsync(
+            IPlayerAgent agent,
+            ClaimDecisionContext context,
+            ClaimDeclaration fallback,
+            CancellationToken cancellationToken)
+            => TimeLimitedDecision.RunAsync(
+                token => agent.DecideClaimAsync(context, token),
+                fallback,
+                context.TimeLimitSeconds,
+                cancellationToken);
 
         private bool ContainsOptionType(IReadOnlyList<ClaimOption> options, ClaimType type)
         {

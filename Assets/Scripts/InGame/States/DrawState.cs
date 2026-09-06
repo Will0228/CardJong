@@ -12,7 +12,7 @@ namespace CardJong.InGame.States
     /// カードを引く（行動パターン）。
     /// 生き山を引き切っていた場合はここで流局にする。
     /// </summary>
-    public sealed class DrawState : InGameStateBase
+    public sealed class DrawState : AsyncStateBase<InGameStateType>
     {
         private readonly InGameModel _model;
         private readonly GameCommandFactory _commandFactory;

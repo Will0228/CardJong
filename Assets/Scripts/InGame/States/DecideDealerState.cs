@@ -11,7 +11,7 @@ namespace CardJong.InGame.States
     /// 親決定。
     /// </summary>
     /// <remarks>TODO: 現状は無作為に決めている。カードめくりなどの決定方法を入れる場合はここを差し替える。</remarks>
-    public sealed class DecideDealerState : InGameStateBase
+    public sealed class DecideDealerState : AsyncStateBase<InGameStateType>
     {
         private readonly InGameModel _model;
         private readonly IRandomService _random;

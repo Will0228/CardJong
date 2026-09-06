@@ -8,7 +8,7 @@ using VContainer;
 namespace CardJong.InGame.States
 {
     /// <summary>ゲーム終了画面。ここでステートマシンのループが終わる。</summary>
-    public sealed class GameEndState : InGameStateBase
+    public sealed class GameEndState : AsyncStateBase<InGameStateType>
     {
         private readonly InGameModel _model;
         private readonly IInGamePresentation _presentation;

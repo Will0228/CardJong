@@ -8,7 +8,7 @@ using VContainer;
 namespace CardJong.InGame.States
 {
     /// <summary>誰かが上がったときの演出画面。</summary>
-    public sealed class WinState : InGameStateBase
+    public sealed class WinState : AsyncStateBase<InGameStateType>
     {
         private readonly InGameModel _model;
         private readonly IInGamePresentation _presentation;

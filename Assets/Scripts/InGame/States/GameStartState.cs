@@ -9,7 +9,7 @@ using VContainer;
 namespace CardJong.InGame.States
 {
     /// <summary>ゲーム開始。プレイヤーと点数を初期化する。</summary>
-    public sealed class GameStartState : InGameStateBase
+    public sealed class GameStartState : AsyncStateBase<InGameStateType>
     {
         private readonly InGameModel _model;
         private readonly InGameSettings _settings;

@@ -12,7 +12,7 @@ namespace CardJong.InGame.States
     /// 局の開始。山を作り、各プレイヤーに 13 枚配り、ドラ表示札を 1 枚めくる。
     /// 残りから生き山を確保し、それ以降は死に山として使わない。
     /// </summary>
-    public sealed class RoundStartState : InGameStateBase
+    public sealed class RoundStartState : AsyncStateBase<InGameStateType>
     {
         private readonly InGameModel _model;
         private readonly IRandomService _random;

@@ -16,7 +16,7 @@ namespace CardJong.InGame.States
     /// 思考時間（行動パターン）。手番のプレイヤーが「1 枚捨てる」か「ツモ上がり」を選ぶ。
     /// 鳴いた直後もこのステートに入るが、その場合はツモ上がりを選べない。
     /// </summary>
-    public sealed class PlayerActionState : InGameStateBase
+    public sealed class PlayerActionState : AsyncStateBase<InGameStateType>
     {
         private readonly InGameModel _model;
         private readonly InGameSettings _settings;
@@ -83,6 +83,18 @@ namespace CardJong.InGame.States
                 ? InGameStateType.Win
                 : InGameStateType.ClaimWait);
         }
+
+        /// <summary>制限時間つきで手番の行動を決めさせる。時間切れの場合は fallback を返す。</summary>
+        private static UniTask<TurnAction> DecideTurnActionAsync(
+            IPlayerAgent agent,
+            TurnDecisionContext context,
+            TurnAction fallback,
+            CancellationToken cancellationToken)
+            => TimeLimitedDecision.RunAsync(
+                token => agent.DecideTurnActionAsync(context, token),
+                fallback,
+                context.TimeLimitSeconds,
+                cancellationToken);
 
         /// <summary>宣言できない行動が返ってきた場合に、実行可能な行動へ丸める。</summary>
         private TurnAction Sanitize(TurnAction action, bool canDeclareTsumo, bool canDeclareRiichi, TurnAction fallback)
