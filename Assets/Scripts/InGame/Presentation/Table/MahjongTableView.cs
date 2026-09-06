@@ -207,9 +207,10 @@ namespace CardJong.InGame.Presentation.Table
             }
         }
 
-        private static void Place(MahjongTileView tile, Pose pose)
+        private void Place(MahjongTileView tile, Pose pose)
         {
             tile.transform.SetLocalPositionAndRotation(pose.position, pose.rotation);
+            tile.transform.localScale = Vector3.one * _layout.TileScale;
         }
     }
 }
