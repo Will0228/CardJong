@@ -1,0 +1,52 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: MahjongTileBody
+  m_Shader: {fileID: 4800000, guid: dcfc3ba39538cc245a8549c62f0ea43f, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 1
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _BaseMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _Cutoff: 0.5
+    - _DoraCoreStrength: 0.18
+    - _DoraIntensity: 0
+    - _DoraPulseDepth: 0.45
+    - _DoraPulseSpeed: 0.7
+    - _DoraRimPower: 2.5
+    - _DoraRimStrength: 1.6
+    - _DoraSweepSpeed: 0.45
+    - _DoraSweepStrength: 1.1
+    - _DoraSweepWidth: 0.12
+    - _DoraTint: 0.35
+    - _FaceMode: 0
+    - _Metallic: 0
+    - _Smoothness: 0.55
+    m_Colors:
+    - _BackColor: {r: 0.886, g: 0.741, b: 0.4, a: 1}
+    - _BaseColor: {r: 0.965, g: 0.957, b: 0.925, a: 1}
+    - _DoraColor: {r: 1.6, g: 1.05, b: 0.32, a: 1}
+    - _FaceRect: {r: 0, g: 0, b: 1, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

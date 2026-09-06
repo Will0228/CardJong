@@ -1,0 +1,19 @@
+{
+    "name": "CardJong.InGame.Editor",
+    "rootNamespace": "CardJong.InGame.Editor",
+    "references": [
+        "CardJong.Core",
+        "CardJong.InGame"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
