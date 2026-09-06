@@ -1,0 +1,21 @@
+{
+    "name": "CardJong.Network",
+    "rootNamespace": "CardJong.Network",
+    "references": [
+        "CardJong.Core",
+        "CardJong.InGame",
+        "VContainer",
+        "UniTask",
+        "R3.Unity",
+        "PhotonRealtime"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
