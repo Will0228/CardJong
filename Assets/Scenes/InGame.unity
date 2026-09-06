@@ -446,8 +446,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: CardJong.InGame::CardJong.InGame.Presentation.Hud.InGameHudView
   _tileUiPrefab: {fileID: 7920140013522043166, guid: 74c0dcad7e937cc4c9540a2a502c2e4c, type: 3}
-  _noticeSeconds: 1.6
-  _resultSeconds: 3.5
 --- !u!1 &53927568
 GameObject:
   m_ObjectHideFlags: 0

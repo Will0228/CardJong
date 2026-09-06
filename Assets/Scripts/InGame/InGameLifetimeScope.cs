@@ -77,8 +77,11 @@ namespace CardJong.InGame
 
         private void RegisterPresentation(IContainerBuilder builder)
         {
+            // View は見た目を組み立てるだけ。モデルの購読も入力の受け渡しも Presenter が持つ。
             builder.RegisterComponentInHierarchy<MahjongTableView>();
-            builder.RegisterComponentInHierarchy<InGameHudView>().As<IInGamePresentation>();
+            builder.RegisterComponentInHierarchy<InGameHudView>();
+
+            builder.Register<InGamePresenter>(Lifetime.Singleton).As<IInGamePresentation>();
         }
 
         private void RegisterStateMachine(IContainerBuilder builder)

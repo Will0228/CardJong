@@ -18,5 +18,7 @@ MonoBehaviour:
   _humanSeat: 0
   _thinkTimeSeconds: 15
   _claimWaitSeconds: 6
+  _noticeSeconds: 1.6
+  _resultSeconds: 3.5
   _useFixedSeed: 0
   _randomSeed: 12345

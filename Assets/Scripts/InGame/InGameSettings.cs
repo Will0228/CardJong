@@ -34,6 +34,13 @@ namespace CardJong.InGame
         [Tooltip("ロン・ポン・チーの待機時間（秒）。0 以下で無制限。超過するとパスになる。")]
         [SerializeField] private float _claimWaitSeconds = 5f;
 
+        [Header("演出")]
+        [Tooltip("局の開始・親決めなど、短い案内を出しておく秒数。")]
+        [SerializeField, Min(0f)] private float _noticeSeconds = 1.6f;
+
+        [Tooltip("和了・局終了・最終結果を出しておく秒数。")]
+        [SerializeField, Min(0f)] private float _resultSeconds = 3.5f;
+
         [Header("デバッグ")]
         [Tooltip("同じ配牌を再現したいときに有効にする。")]
         [SerializeField] private bool _useFixedSeed;
@@ -50,6 +57,10 @@ namespace CardJong.InGame
         public float ThinkTimeSeconds => _thinkTimeSeconds;
 
         public float ClaimWaitSeconds => _claimWaitSeconds;
+
+        public float NoticeSeconds => _noticeSeconds;
+
+        public float ResultSeconds => _resultSeconds;
 
         public bool UseFixedSeed => _useFixedSeed;
 

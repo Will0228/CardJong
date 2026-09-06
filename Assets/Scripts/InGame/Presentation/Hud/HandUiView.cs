@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using CardJong.InGame.Cards;
-using CardJong.InGame.Model;
 using UnityEngine;
 
 namespace CardJong.InGame.Presentation.Hud
 {
+    /// <summary>手牌 1 枚ぶんの表示値。ドラかどうかの判定は Presenter が済ませて渡す。</summary>
+    public record HandTile(Card Card, bool IsDora);
+
     /// <summary>
     /// 自分の手牌を画面下に並べる。卓の上には自分の手牌を置かず、ここだけで見せる。
     /// </summary>
@@ -46,26 +48,23 @@ namespace CardJong.InGame.Presentation.Hud
                 anchoredPosition);
         }
 
-        /// <summary>手牌の現在値で並べ直す。</summary>
-        public void Refresh(PlayerCardModel cards, WallModel wall)
+        /// <summary>渡された手牌で並べ直す。<paramref name="hasDrawnTile"/> なら末尾の 1 枚を離して置く。</summary>
+        public void Refresh(IReadOnlyList<HandTile> tiles, bool hasDrawnTile)
         {
-            var concealed = cards.ConcealedCards;
-            EnsureTiles(concealed.Count);
+            EnsureTiles(tiles.Count);
 
-            // ツモ牌は並べ替えずに末尾へ足されるので、最後の 1 枚だけ離して置く。
-            var hasDrawnTile = cards.LastDrawnCard != null && concealed.Count > 1;
             var step = TileSize.x + TileSpacing;
-            var totalWidth = concealed.Count * step - TileSpacing + (hasDrawnTile ? DrawnTileGap : 0f);
+            var totalWidth = tiles.Count * step - TileSpacing + (hasDrawnTile ? DrawnTileGap : 0f);
             var left = -totalWidth * 0.5f + TileSize.x * 0.5f;
 
-            for (var i = 0; i < concealed.Count; i++)
+            for (var i = 0; i < tiles.Count; i++)
             {
-                var gap = hasDrawnTile && i == concealed.Count - 1 ? DrawnTileGap : 0f;
+                var gap = hasDrawnTile && i == tiles.Count - 1 ? DrawnTileGap : 0f;
                 var tile = _tiles[i];
 
                 ((RectTransform)tile.transform).anchoredPosition = new Vector2(left + i * step + gap, 0f);
-                tile.SetCard(concealed[i]);
-                tile.SetDora(wall.IsDora(concealed[i]));
+                tile.SetCard(tiles[i].Card);
+                tile.SetDora(tiles[i].IsDora);
                 tile.SetInteractable(_isInteractable);
             }
         }
