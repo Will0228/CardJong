@@ -23,8 +23,15 @@ namespace CardJong.InGame.Cards
         private static readonly Suit[] AllSuits = { Suit.Spade, Suit.Heart, Suit.Diamond, Suit.Club };
 
         /// <summary>
-        /// 208 枚ぶんのテンプレート。中身は局をまたいでも変わらないので、
-        /// 局のたびに 208 枚を作り直さず、ここから複製する。
+        /// マーク x ランクの 52 通りぶんの実体。Card は不変な参照型なので、4 デッキぶんに
+        /// 同じ実体を使い回せる。208 個の Card を毎回 new せずに済むように、ここでまとめて作る。
+        /// </summary>
+        private static readonly Card[] UniqueCards = CreateUniqueCards();
+
+        /// <summary>
+        /// 208 枚ぶんのテンプレート。UniqueCards の参照を 4 デッキぶん並べたものなので、
+        /// 実際に確保される Card は 52 個だけで済む。中身は局をまたいでも変わらないので、
+        /// 局のたびに作り直さず、ここから複製する。
         /// </summary>
         private static readonly Card[] FullDeckTemplate = CreateFullDeckTemplate();
 
@@ -34,19 +41,27 @@ namespace CardJong.InGame.Cards
         /// </summary>
         public static List<Card> CreateFullDeck() => new(FullDeckTemplate);
 
+        private static Card[] CreateUniqueCards()
+        {
+            var cards = new Card[CardsPerDeck];
+            var index = 0;
+            foreach (var suit in AllSuits)
+            {
+                for (var rank = (int)Rank.Ace; rank <= (int)Rank.King; rank++)
+                {
+                    cards[index++] = new Card(suit, (Rank)rank);
+                }
+            }
+
+            return cards;
+        }
+
         private static Card[] CreateFullDeckTemplate()
         {
             var cards = new Card[TotalCardCount];
-            var index = 0;
             for (var deck = 0; deck < DeckCount; deck++)
             {
-                foreach (var suit in AllSuits)
-                {
-                    for (var rank = (int)Rank.Ace; rank <= (int)Rank.King; rank++)
-                    {
-                        cards[index++] = new Card(suit, (Rank)rank);
-                    }
-                }
+                Array.Copy(UniqueCards, 0, cards, deck * CardsPerDeck, CardsPerDeck);
             }
 
             return cards;

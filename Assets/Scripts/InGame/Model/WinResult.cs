@@ -4,18 +4,10 @@ using CardJong.InGame.Cards;
 namespace CardJong.InGame.Model
 {
     /// <summary>成立した役 1 つ分。</summary>
-    public readonly struct YakuResult
+    /// <param name="Name">役名。</param>
+    /// <param name="Han">翻数。</param>
+    public sealed record YakuResult(string Name, int Han)
     {
-        public string Name { get; }
-
-        public int Han { get; }
-
-        public YakuResult(string name, int han)
-        {
-            Name = name;
-            Han = han;
-        }
-
         public override string ToString() => $"{Name} {Han}翻";
     }
 
