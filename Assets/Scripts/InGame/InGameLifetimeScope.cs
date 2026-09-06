@@ -81,6 +81,10 @@ namespace CardJong.InGame
             builder.RegisterComponentInHierarchy<MahjongTableView>();
             builder.RegisterComponentInHierarchy<InGameHudView>();
 
+            // 手牌の UI は HUD の Canvas の下に組み立てられるので、組み上がったものを取り出して渡す。
+            builder.Register<HandUiView>(resolver => resolver.Resolve<InGameHudView>().HandUi, Lifetime.Singleton);
+
+            builder.Register<IHandPresenter, HandPresenter>(Lifetime.Singleton);
             builder.Register<InGamePresenter>(Lifetime.Singleton).As<IInGamePresentation>();
         }
 

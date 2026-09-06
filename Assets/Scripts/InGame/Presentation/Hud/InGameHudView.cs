@@ -37,8 +37,9 @@ namespace CardJong.InGame.Presentation.Hud
     /// </summary>
     /// <remarks>
     /// 他家の手牌・河・鳴き・ドラは <see cref="Table.MahjongTableView"/> が 3D の卓で見せる。
-    /// ここが持つのは、点数や局数といった文字情報と、宣言のボタンと、
-    /// 画面下に並べる自分の手牌（<see cref="HandUiView"/>）。
+    /// ここが持つのは、点数や局数といった文字情報と、宣言のボタン。
+    /// 画面下の手牌（<see cref="HandUiView"/>）も階層としてはここに作るが、
+    /// 中身は <see cref="HandPresenter"/> が受け持つので、ここでは触らない。
     ///
     /// レイアウトを手で組んだシーンにすると、席数やカード枚数が変わるたびにシーン側を
     /// 触ることになる。表示物の数がモデル次第で決まる HUD なので、階層ごとコードに寄せている。
@@ -94,21 +95,21 @@ namespace CardJong.InGame.Presentation.Hud
         private float _timerDuration;
         private float _timerRemaining;
 
-        /// <summary>手牌の牌が押された。</summary>
-        public event Action<Card> TileClicked;
-
-        private void Awake()
+        /// <summary>
+        /// 画面下に並ぶ自分の手牌。ここが組み立てるのは HUD の階層の一部だからで、
+        /// 何を並べるか・押されたらどうするかは <see cref="HandPresenter"/> が受け持つ。
+        /// </summary>
+        public HandUiView HandUi
         {
-            _factory = new HudUiFactory();
-            BuildHierarchy();
-
-            _handUi.TileClicked += RaiseTileClicked;
+            get
+            {
+                // DI からここを引かれるのが Awake より先になることがあるので、必要なら先に組み立てる。
+                EnsureBuilt();
+                return _handUi;
+            }
         }
 
-        private void OnDestroy()
-        {
-            if (_handUi != null) _handUi.TileClicked -= RaiseTileClicked;
-        }
+        private void Awake() => EnsureBuilt();
 
         private void Update()
         {
@@ -161,12 +162,6 @@ namespace CardJong.InGame.Presentation.Hud
 
         /// <summary>ドラ表示札を並べ直す。</summary>
         public void SetDoraIndicators(IReadOnlyList<Card> indicators) => _doraUi.Refresh(indicators);
-
-        /// <summary>自分の手牌を並べ直す。</summary>
-        public void SetHand(IReadOnlyList<HandTile> tiles, bool hasDrawnTile) => _handUi.Refresh(tiles, hasDrawnTile);
-
-        /// <summary>手牌を押せる状態にするか。</summary>
-        public void SetHandInteractable(bool value) => _handUi.SetInteractable(value);
 
         /// <summary>行動を促す一言。空文字なら何も出ない。</summary>
         public void SetPrompt(string text) => _promptText.text = text;
@@ -226,8 +221,6 @@ namespace CardJong.InGame.Presentation.Hud
 
         public void HideOverlay() => _overlayRoot.gameObject.SetActive(false);
 
-        private void RaiseTileClicked(Card card) => TileClicked?.Invoke(card);
-
         private static Color ButtonColorOf(ActionButtonKind kind) => kind switch
         {
             ActionButtonKind.Win => WinButtonColor,
@@ -238,6 +231,14 @@ namespace CardJong.InGame.Presentation.Hud
         };
 
         // ---- 画面の組み立て ----
+
+        private void EnsureBuilt()
+        {
+            if (_factory != null) return;
+
+            _factory = new HudUiFactory();
+            BuildHierarchy();
+        }
 
         private void BuildHierarchy()
         {

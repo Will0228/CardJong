@@ -21,6 +21,10 @@ namespace CardJong.InGame.Presentation
     /// View は何を出しているのかを知らず、渡された値を並べるだけにしてある。Model を読むのも、
     /// 文字列へ整形するのも、リーチ予約のように画面の側だけが持つ状態を覚えておくのもここ。
     ///
+    /// 画面下の自分の手牌だけは <see cref="IHandPresenter"/> に任せてある。手牌の中身と
+    /// 押された牌はそちらで完結するので、ここは「選べるようにするか」と
+    /// 「選ばれた牌をどう扱うか」だけを見る。
+    ///
     /// 席（seat）と卓の位置（slot）の対応を持つのもこの層。「自分が手前」に見えるよう
     /// 並べ替えるのは表示の都合であって、Model にも View にも関係が無いため。
     /// </remarks>
@@ -31,13 +35,13 @@ namespace CardJong.InGame.Presentation
         private readonly IPlayerInputPort _inputPort;
         private readonly InGameHudView _hudView;
         private readonly MahjongTableView _tableView;
+        private readonly IHandPresenter _handPresenter;
 
         private readonly CompositeDisposable _subscriptions = new();
 
         // 表示を更新するたびに List を作らずに済むよう、View へ渡す入れ物は使い回す。
         private readonly List<TableTile> _tiles = new();
         private readonly List<int> _meldSizes = new();
-        private readonly List<HandTile> _handTiles = new();
         private readonly List<SeatPlateState> _seatPlates = new();
         private readonly List<ActionButtonSpec> _actionButtons = new();
 
@@ -52,15 +56,17 @@ namespace CardJong.InGame.Presentation
             InGameSettings settings,
             IPlayerInputPort inputPort,
             InGameHudView hudView,
-            MahjongTableView tableView)
+            MahjongTableView tableView,
+            IHandPresenter handPresenter)
         {
             _model = model;
             _settings = settings;
             _inputPort = inputPort;
             _hudView = hudView;
             _tableView = tableView;
+            _handPresenter = handPresenter;
 
-            _hudView.TileClicked += OnHandTileClicked;
+            _subscriptions.Add(_handPresenter.TileSelected.Subscribe(OnHandTileSelected));
             _subscriptions.Add(_inputPort.OnTurnDecisionRequested.Subscribe(OnTurnDecisionRequested));
             _subscriptions.Add(_inputPort.OnClaimDecisionRequested.Subscribe(OnClaimDecisionRequested));
             _subscriptions.Add(_inputPort.OnDecisionClosed.Subscribe(_ => CloseDecision()));
@@ -71,6 +77,7 @@ namespace CardJong.InGame.Presentation
             // ここまでにモデルの初期化が済んでいるので、席の数が決まったこの時点で表示を組む。
             _tableView.Initialize(_model.PlayerCount);
             _hudView.BuildSeatPlates(_model.PlayerCount);
+            _handPresenter.Initialize();
 
             SubscribeToModel();
             RefreshAll();
@@ -98,8 +105,6 @@ namespace CardJong.InGame.Presentation
 
         public void Dispose()
         {
-            if (_hudView != null) _hudView.TileClicked -= OnHandTileClicked;
-
             _subscriptions.Dispose();
         }
 
@@ -139,17 +144,14 @@ namespace CardJong.InGame.Presentation
             {
                 RefreshTable(seat);
             }
-
-            RefreshHand();
         }
 
         /// <summary>その席の持ち物が変わったときの更新。リーチ宣言も名札に出るので名札ごと直す。</summary>
+        /// <remarks>自分の手牌は <see cref="IHandPresenter"/> が自分で拾うので、ここでは触らない。</remarks>
         private void RefreshSeat(int seat)
         {
             RefreshTable(seat);
             RefreshSeatPlates();
-
-            if (seat == HumanSeat) RefreshHand();
         }
 
         private void RefreshInfo()
@@ -229,24 +231,6 @@ namespace CardJong.InGame.Presentation
             _tableView.SetMelds(slot, _tiles, _meldSizes);
         }
 
-        private void RefreshHand()
-        {
-            if (HumanSeat < 0) return;
-
-            var cards = _model.GetPlayer(HumanSeat).Cards;
-            var concealed = cards.ConcealedCards;
-
-            _handTiles.Clear();
-            for (var i = 0; i < concealed.Count; i++)
-            {
-                _handTiles.Add(new HandTile(concealed[i], _model.Wall.IsDora(concealed[i])));
-            }
-
-            // ツモ牌は並べ替えずに末尾へ足されるので、最後の 1 枚だけ離して見せる。
-            var hasDrawnTile = cards.LastDrawnCard != null && concealed.Count > 1;
-            _hudView.SetHand(_handTiles, hasDrawnTile);
-        }
-
         // ---- 人間プレイヤーの入力 ----
 
         private void OnTurnDecisionRequested(TurnDecisionContext context)
@@ -254,7 +238,7 @@ namespace CardJong.InGame.Presentation
             _riichiArmed = false;
             ShowTurnActions(context);
 
-            _hudView.SetHandInteractable(true);
+            _handPresenter.SetSelectable(true);
             _hudView.ShowTimer(context.TimeLimitSeconds);
         }
 
@@ -321,10 +305,10 @@ namespace CardJong.InGame.Presentation
             _hudView.ClearActions();
             _hudView.HideTimer();
             _hudView.SetPrompt(string.Empty);
-            _hudView.SetHandInteractable(false);
+            _handPresenter.SetSelectable(false);
         }
 
-        private void OnHandTileClicked(Card card)
+        private void OnHandTileSelected(Card card)
             => _inputPort.SubmitTurnAction(_riichiArmed ? TurnAction.Riichi(card) : TurnAction.Discard(card));
 
         // ---- 案内の表示 ----
