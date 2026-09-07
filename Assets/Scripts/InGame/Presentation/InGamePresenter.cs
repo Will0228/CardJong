@@ -14,221 +14,104 @@ using VContainer;
 namespace CardJong.InGame.Presentation
 {
     /// <summary>
-    /// インゲームの画面まわりの取りまとめ。State から呼ばれ、Model の変化を View へ流し、
-    /// View で起きた操作を <see cref="IPlayerInputPort"/> へ返す。
+    /// インゲームの画面まわりの取りまとめ。State から呼ばれて案内を出し、
+    /// 人間プレイヤーに選ばせた結果を <see cref="IPlayerInputPort"/> へ返す。
     /// </summary>
     /// <remarks>
-    /// View は何を出しているのかを知らず、渡された値を並べるだけにしてある。Model を読むのも、
-    /// 文字列へ整形するのも、リーチ予約のように画面の側だけが持つ状態を覚えておくのもここ。
+    /// 卓・HUD・手牌はそれぞれの Presenter が自分でモデルを見て並べ直すので、ここは
+    /// View を 1 つも持たない。残るのは「今なにを選ばせるか」という進行の判断と、
+    /// リーチ予約のように画面の側だけが覚えておく状態。
     ///
-    /// 画面下の自分の手牌だけは <see cref="IHandPresenter"/> に任せてある。手牌の中身と
-    /// 押された牌はそちらで完結するので、ここは「選べるようにするか」と
-    /// 「選ばれた牌をどう扱うか」だけを見る。
-    ///
-    /// 席（seat）と卓の位置（slot）の対応を持つのもこの層。「自分が手前」に見えるよう
-    /// 並べ替えるのは表示の都合であって、Model にも View にも関係が無いため。
+    /// <list type="bullet">
+    /// <item><see cref="ITablePresenter"/> … 3D の卓（他家の手牌・河・鳴き・ドラ）</item>
+    /// <item><see cref="IHudPresenter"/> … 局数・名札・宣言のボタン・案内</item>
+    /// <item><see cref="IHandPresenter"/> … 画面下に並べる自分の手牌</item>
+    /// </list>
     /// </remarks>
     public sealed class InGamePresenter : IInGamePresentation, IDisposable
     {
         private readonly InGameModel _model;
         private readonly InGameSettings _settings;
         private readonly IPlayerInputPort _inputPort;
-        private readonly InGameHudView _hudView;
-        private readonly MahjongTableView _tableView;
+        private readonly ITablePresenter _tablePresenter;
+        private readonly IHudPresenter _hudPresenter;
         private readonly IHandPresenter _handPresenter;
 
         private readonly CompositeDisposable _subscriptions = new();
 
-        // 表示を更新するたびに List を作らずに済むよう、View へ渡す入れ物は使い回す。
-        private readonly List<TableTile> _tiles = new();
-        private readonly List<int> _meldSizes = new();
-        private readonly List<SeatPlateState> _seatPlates = new();
+        // 出し直すたびに List を作らずに済むよう、渡す入れ物は使い回す。
         private readonly List<ActionButtonSpec> _actionButtons = new();
 
         /// <summary>リーチを予約しているか。宣言と打牌が一体なので、切る牌を選ぶまで覚えておく。</summary>
         private bool _riichiArmed;
-
-        private int HumanSeat => _settings.HumanSeat;
 
         [Inject]
         public InGamePresenter(
             InGameModel model,
             InGameSettings settings,
             IPlayerInputPort inputPort,
-            InGameHudView hudView,
-            MahjongTableView tableView,
+            ITablePresenter tablePresenter,
+            IHudPresenter hudPresenter,
             IHandPresenter handPresenter)
         {
             _model = model;
             _settings = settings;
             _inputPort = inputPort;
-            _hudView = hudView;
-            _tableView = tableView;
+            _tablePresenter = tablePresenter;
+            _hudPresenter = hudPresenter;
             _handPresenter = handPresenter;
 
-            _subscriptions.Add(_handPresenter.TileSelected.Subscribe(OnHandTileSelected));
-            _subscriptions.Add(_inputPort.OnTurnDecisionRequested.Subscribe(OnTurnDecisionRequested));
-            _subscriptions.Add(_inputPort.OnClaimDecisionRequested.Subscribe(OnClaimDecisionRequested));
-            _subscriptions.Add(_inputPort.OnDecisionClosed.Subscribe(_ => CloseDecision()));
+            Bind();
         }
 
         public UniTask ShowGameStartAsync(CancellationToken cancellationToken)
         {
             // ここまでにモデルの初期化が済んでいるので、席の数が決まったこの時点で表示を組む。
-            _tableView.Initialize(_model.PlayerCount);
-            _hudView.BuildSeatPlates(_model.PlayerCount);
+            _tablePresenter.Initialize();
+            _hudPresenter.Initialize();
             _handPresenter.Initialize();
 
-            SubscribeToModel();
-            RefreshAll();
-
-            return ShowOverlayAsync(InGameMessages.GameStart, _settings.NoticeSeconds, cancellationToken);
+            return _hudPresenter.ShowNoticeAsync(
+                InGameMessages.GameStart,
+                _settings.NoticeSeconds,
+                cancellationToken);
         }
 
         public UniTask ShowDealerDecisionAsync(int dealerSeat, CancellationToken cancellationToken)
-            => ShowOverlayAsync(InGameMessages.DealerDecision(dealerSeat), _settings.NoticeSeconds, cancellationToken);
+            => _hudPresenter.ShowNoticeAsync(
+                InGameMessages.DealerDecision(dealerSeat),
+                _settings.NoticeSeconds,
+                cancellationToken);
 
         public UniTask ShowRoundStartAsync(int roundNumber, int honba, CancellationToken cancellationToken)
-            => ShowOverlayAsync(
+            => _hudPresenter.ShowNoticeAsync(
                 InGameMessages.Round(roundNumber, honba, _model.PlayerCount),
                 _settings.NoticeSeconds,
                 cancellationToken);
 
         public UniTask ShowWinAsync(WinResult win, CancellationToken cancellationToken)
-            => ShowOverlayAsync(InGameMessages.Win(win), _settings.ResultSeconds, cancellationToken);
+            => _hudPresenter.ShowNoticeAsync(InGameMessages.Win(win), _settings.ResultSeconds, cancellationToken);
 
         public UniTask ShowRoundResultAsync(RoundResult result, CancellationToken cancellationToken)
-            => ShowOverlayAsync(InGameMessages.RoundResult(result), _settings.ResultSeconds, cancellationToken);
+            => _hudPresenter.ShowNoticeAsync(
+                InGameMessages.RoundResult(result),
+                _settings.ResultSeconds,
+                cancellationToken);
 
         public UniTask ShowGameResultAsync(GameResult result, CancellationToken cancellationToken)
-            => ShowOverlayAsync(InGameMessages.GameResult(result), _settings.ResultSeconds * 2f, cancellationToken);
+            => _hudPresenter.ShowNoticeAsync(
+                InGameMessages.GameResult(result),
+                _settings.ResultSeconds * 2f,
+                cancellationToken);
 
-        public void Dispose()
+        public void Dispose() => _subscriptions.Dispose();
+
+        private void Bind()
         {
-            _subscriptions.Dispose();
-        }
-
-        // ---- モデルの購読 ----
-
-        private void SubscribeToModel()
-        {
-            _subscriptions.Add(_model.RoundNumber.Subscribe(_ => RefreshInfo()));
-            _subscriptions.Add(_model.Honba.Subscribe(_ => RefreshInfo()));
-
-            // ドラ表示札は生き山を確保する直前にめくられるので、残り枚数が動いた時点で
-            // めくられたことも拾える。
-            _subscriptions.Add(_model.Wall.LiveWallRemaining.Subscribe(_ =>
-            {
-                RefreshInfo();
-                RefreshDora();
-            }));
-
-            _subscriptions.Add(_model.CurrentSeat.Subscribe(_ => RefreshSeatPlates()));
-            _subscriptions.Add(_model.DealerSeat.Subscribe(_ => RefreshSeatPlates()));
-
-            for (var seat = 0; seat < _model.PlayerCount; seat++)
-            {
-                var player = _model.GetPlayer(seat);
-                _subscriptions.Add(player.Score.Points.Subscribe(_ => RefreshSeatPlates()));
-                _subscriptions.Add(player.Cards.OnChanged.Subscribe(_ => RefreshSeat(player.Seat)));
-            }
-        }
-
-        private void RefreshAll()
-        {
-            RefreshInfo();
-            RefreshDora();
-            RefreshSeatPlates();
-
-            for (var seat = 0; seat < _model.PlayerCount; seat++)
-            {
-                RefreshTable(seat);
-            }
-        }
-
-        /// <summary>その席の持ち物が変わったときの更新。リーチ宣言も名札に出るので名札ごと直す。</summary>
-        /// <remarks>自分の手牌は <see cref="IHandPresenter"/> が自分で拾うので、ここでは触らない。</remarks>
-        private void RefreshSeat(int seat)
-        {
-            RefreshTable(seat);
-            RefreshSeatPlates();
-        }
-
-        private void RefreshInfo()
-            => _hudView.SetRoundInfo(
-                InGameMessages.Round(_model.RoundNumber.CurrentValue, _model.Honba.CurrentValue, _model.PlayerCount),
-                InGameMessages.WallRemaining(_model.Wall.LiveWallRemaining.CurrentValue));
-
-        private void RefreshDora()
-        {
-            _tableView.SetDoraIndicators(_model.Wall.DoraIndicators);
-            _hudView.SetDoraIndicators(_model.Wall.DoraIndicators);
-        }
-
-        private void RefreshSeatPlates()
-        {
-            var dealerSeat = _model.DealerSeat.CurrentValue;
-            var currentSeat = _model.CurrentSeat.CurrentValue;
-
-            // 名札は卓のどこに座って見えるかに合わせて置いてあるので、位置の順で渡す。
-            _seatPlates.Clear();
-
-            for (var slot = 0; slot < _model.PlayerCount; slot++)
-            {
-                var seat = SeatOfSlot(slot);
-                var player = _model.GetPlayer(seat);
-                var isRiichi = player.Status.IsRiichi;
-
-                _seatPlates.Add(new SeatPlateState(
-                    InGameMessages.SeatName(RelationOf(slot), seat, seat == dealerSeat, isRiichi),
-                    InGameMessages.SeatScore(player.Score.Points.CurrentValue),
-                    isRiichi,
-                    seat == currentSeat));
-            }
-
-            _hudView.SetSeatPlates(_seatPlates);
-        }
-
-        private void RefreshTable(int seat)
-        {
-            var slot = SlotOf(seat);
-            var cards = _model.GetPlayer(seat).Cards;
-
-            // 自分の手牌は画面下の UI で見せるので、卓には並べない。
-            _tableView.SetHand(slot, seat == HumanSeat ? 0 : cards.ConcealedCards.Count);
-
-            RefreshDiscards(slot, cards.Discards);
-            RefreshMelds(slot, cards.Melds);
-        }
-
-        private void RefreshDiscards(int slot, IReadOnlyList<Card> discards)
-        {
-            _tiles.Clear();
-            for (var i = 0; i < discards.Count; i++)
-            {
-                _tiles.Add(new TableTile(discards[i], _model.Wall.IsDora(discards[i])));
-            }
-
-            _tableView.SetDiscards(slot, _tiles);
-        }
-
-        private void RefreshMelds(int slot, IReadOnlyList<Meld> melds)
-        {
-            _tiles.Clear();
-            _meldSizes.Clear();
-
-            for (var i = 0; i < melds.Count; i++)
-            {
-                var cards = melds[i].Cards;
-                _meldSizes.Add(cards.Count);
-
-                for (var j = 0; j < cards.Count; j++)
-                {
-                    _tiles.Add(new TableTile(cards[j], _model.Wall.IsDora(cards[j])));
-                }
-            }
-
-            _tableView.SetMelds(slot, _tiles, _meldSizes);
+            _handPresenter.TileSelected.Subscribe(OnHandTileSelected).AddTo(_subscriptions);
+            _inputPort.OnTurnDecisionRequested.Subscribe(OnTurnDecisionRequested).AddTo(_subscriptions);
+            _inputPort.OnClaimDecisionRequested.Subscribe(OnClaimDecisionRequested).AddTo(_subscriptions);
+            _inputPort.OnDecisionClosed.Subscribe(_ => CloseDecision()).AddTo(_subscriptions);
         }
 
         // ---- 人間プレイヤーの入力 ----
@@ -239,13 +122,11 @@ namespace CardJong.InGame.Presentation
             ShowTurnActions(context);
 
             _handPresenter.SetSelectable(true);
-            _hudView.ShowTimer(context.TimeLimitSeconds);
+            _hudPresenter.StartTimer(context.TimeLimitSeconds);
         }
 
         private void ShowTurnActions(TurnDecisionContext context)
         {
-            _hudView.SetPrompt(_riichiArmed ? InGameMessages.RiichiPrompt : InGameMessages.DiscardPrompt);
-
             _actionButtons.Clear();
 
             if (context.CanDeclareTsumo)
@@ -264,7 +145,9 @@ namespace CardJong.InGame.Presentation
                     () => ToggleRiichi(context)));
             }
 
-            _hudView.ShowActions(_actionButtons);
+            _hudPresenter.ShowDecision(
+                _riichiArmed ? InGameMessages.RiichiPrompt : InGameMessages.DiscardPrompt,
+                _actionButtons);
         }
 
         /// <summary>リーチは宣言と打牌が一体なので、ボタンで予約してから捨てる牌を選ばせる。</summary>
@@ -276,8 +159,6 @@ namespace CardJong.InGame.Presentation
 
         private void OnClaimDecisionRequested(ClaimDecisionContext context)
         {
-            _hudView.SetPrompt(InGameMessages.DiscardAnnounce(context.Discard));
-
             _actionButtons.Clear();
 
             for (var i = 0; i < context.Options.Count; i++)
@@ -294,53 +175,19 @@ namespace CardJong.InGame.Presentation
                 ActionButtonKind.Pass,
                 () => _inputPort.SubmitClaim(ClaimDeclaration.Pass(context.Seat))));
 
-            _hudView.ShowActions(_actionButtons);
-            _hudView.ShowTimer(context.TimeLimitSeconds);
+            _hudPresenter.ShowDecision(InGameMessages.DiscardAnnounce(context.Discard), _actionButtons);
+            _hudPresenter.StartTimer(context.TimeLimitSeconds);
         }
 
         private void CloseDecision()
         {
             _riichiArmed = false;
 
-            _hudView.ClearActions();
-            _hudView.HideTimer();
-            _hudView.SetPrompt(string.Empty);
+            _hudPresenter.CloseDecision();
             _handPresenter.SetSelectable(false);
         }
 
         private void OnHandTileSelected(Card card)
             => _inputPort.SubmitTurnAction(_riichiArmed ? TurnAction.Riichi(card) : TurnAction.Discard(card));
-
-        // ---- 案内の表示 ----
-
-        private async UniTask ShowOverlayAsync(string message, float seconds, CancellationToken cancellationToken)
-        {
-            _hudView.ShowOverlay(message);
-
-            try
-            {
-                await UniTask.Delay(TimeSpan.FromSeconds(seconds), cancellationToken: cancellationToken);
-            }
-            finally
-            {
-                _hudView.HideOverlay();
-            }
-        }
-
-        // ---- 席と卓の位置の対応 ----
-
-        private int SlotOf(int seat) => TableLayout.SlotOf(seat, HumanSeat, _model.PlayerCount);
-
-        /// <summary>卓のその位置に座っているのは誰か。<see cref="SlotOf"/> の逆。</summary>
-        private int SeatOfSlot(int slot) => HumanSeat < 0 ? slot : (HumanSeat + slot) % _model.PlayerCount;
-
-        private string RelationOf(int slot)
-        {
-            if (HumanSeat < 0) return string.Empty;
-            if (slot == 0) return "自分";
-            if (slot == 1) return "下家";
-
-            return slot == _model.PlayerCount - 1 ? "上家" : "対面";
-        }
     }
 }

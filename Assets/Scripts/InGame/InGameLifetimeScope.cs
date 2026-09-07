@@ -84,7 +84,11 @@ namespace CardJong.InGame
             // 手牌の UI は HUD の Canvas の下に組み立てられるので、組み上がったものを取り出して渡す。
             builder.Register<HandUiView>(resolver => resolver.Resolve<InGameHudView>().HandUi, Lifetime.Singleton);
 
+            // 画面の部品ごとに Presenter を分け、InGamePresenter はこれらの窓口だけを見る。
+            builder.Register<ITablePresenter, TablePresenter>(Lifetime.Singleton);
+            builder.Register<IHudPresenter, HudPresenter>(Lifetime.Singleton);
             builder.Register<IHandPresenter, HandPresenter>(Lifetime.Singleton);
+
             builder.Register<InGamePresenter>(Lifetime.Singleton).As<IInGamePresentation>();
         }
 

@@ -81,6 +81,10 @@ namespace CardJong.InGame.Presentation.Table
         public static int SlotOf(int seat, int humanSeat, int playerCount)
             => humanSeat < 0 ? seat : (seat - humanSeat + playerCount) % playerCount;
 
+        /// <summary>卓のその位置に座っているのは誰か。<see cref="SlotOf"/> の逆。</summary>
+        public static int SeatOfSlot(int slot, int humanSeat, int playerCount)
+            => humanSeat < 0 ? slot : (humanSeat + slot) % playerCount;
+
         /// <summary>立てた手牌 1 枚。列の中心が席の正面に来るよう左右に振り分ける。</summary>
         public Pose HandTile(int slot, int index, int count)
         {
