@@ -2,6 +2,34 @@
 
 トランプに麻雀の要素を取り入れた対戦ゲーム。ルールの仕様は [README.md](README.md) を参照。
 
+## アーキテクチャ
+
+### MVP パターンを基準にする
+
+実装は MVP（Model-View-Presenter）パターンを基準にする。DDD は採用しない。
+
+- State クラスをアプリケーション層に見立てる。画面・機能ごとの State が
+  Presenter（インタフェース）を通じて View・Model にアクセスする起点になる。
+- Presenter はインタフェースとして定義し、State から呼び出す。View・Model への
+  アクセスは Presenter 経由に揃え、State が両者を直接知らないようにする。
+- View は基本的にインタフェースを継承しなくてよい。MonoBehaviour のまま
+  Presenter から具象型として扱う。テストや差し替えでどうしても必要になった
+  場合に限りインタフェースを切り出す。
+
+### コンポジション優先、継承は必要なときだけ
+
+再利用したい振る舞いがあるときは、基底クラスを増やすのではなく、
+インタフェースを実装したオブジェクトをフィールドに持たせて委譲する形を先に検討する。
+継承は「is-a」が明確で、コンポジションで表現すると逆にわかりづらくなる場合に限る。
+
+## ワークフロー
+
+### 機能ごとに細かくコミット・プッシュする
+
+何かを実装したら、1 つの巨大なコミットにまとめず、機能ごとに分けてコミットし、
+そのつどプッシュする。差分が追いやすくなり、問題が起きたときも
+どの機能が原因かを切り分けやすくなる。
+
 ## コーディング規約
 
 ### メソッド内のローカル変数は `var` で宣言する
@@ -136,3 +164,40 @@ public sealed record RoundResult(int Round, int DealerSeat, IReadOnlyList<int> S
 
 迷ったらインスタンスメソッドにしておく。後から `static` にするのは簡単だが、
 外に公開された `static` を戻すのは難しい。
+
+### 購読は `CompositeDisposable` の変数を渡す `AddTo` でまとめる
+
+購読のたびに `new CompositeDisposable()` を作ってそこに `Add` するのではなく、
+クラスが持つ `CompositeDisposable` 変数を `AddTo` に渡す。
+
+```csharp
+// OK
+_view.OnClickAsObservable.Subscribe(_ => 処理).AddTo(_subscriptions);
+
+// NG
+var disposable = new CompositeDisposable();
+disposable.Add(_view.OnClickAsObservable.Subscribe(_ => 処理));
+```
+
+### 購読は `SetEvent` か `Bind` の中でだけ行う
+
+購読処理をコンストラクタや他のメソッドに散らさず、次のどちらかにまとめる。
+
+| メソッド | 対象 |
+|---|---|
+| `SetEvent` | そのクラスの中で完結する処理（自クラスのメソッド呼び出しやラムダの中で完結し、他クラスが関与しない） |
+| `Bind` | 別クラスのメソッド呼び出しなど、他クラスが関与する処理 |
+
+```csharp
+// OK（自クラス内で完結 → SetEvent）
+private void SetEvent()
+{
+    _view.OnClickAsObservable.Subscribe(_ => _count++).AddTo(_subscriptions);
+}
+
+// OK（別クラスのメソッドを呼ぶ → Bind）
+private void Bind()
+{
+    _view.OnClickAsObservable.Subscribe(_ => _presenter.OnClick()).AddTo(_subscriptions);
+}
+```
