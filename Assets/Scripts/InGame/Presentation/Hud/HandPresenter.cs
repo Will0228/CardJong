@@ -41,8 +41,6 @@ namespace CardJong.InGame.Presentation.Hud
             _model = model;
             _settings = settings;
             _view = view;
-
-            _view.TileClicked += OnTileClicked;
         }
 
         public void Initialize()
@@ -50,7 +48,7 @@ namespace CardJong.InGame.Presentation.Hud
             // 人間が座っていない構成では画面下に出すものが無いので、購読ごと省く。
             if (HumanSeat < 0) return;
 
-            _subscriptions.Add(_model.GetPlayer(HumanSeat).Cards.OnChanged.Subscribe(_ => Refresh()));
+            Bind();
             Refresh();
         }
 
@@ -62,6 +60,12 @@ namespace CardJong.InGame.Presentation.Hud
 
             _subscriptions.Dispose();
             _tileSelected.Dispose();
+        }
+
+        private void Bind()
+        {
+            _view.TileClicked += OnTileClicked;
+            _model.GetPlayer(HumanSeat).Cards.OnChanged.Subscribe(_ => Refresh()).AddTo(_subscriptions);
         }
 
         private void Refresh()
